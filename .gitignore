@@ -1,0 +1,42 @@
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.builds
+*.pidb
+*.log
+*.scc
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+bins/
+[Oo]bj/
+
+# Packages
+*.nupkg
+*.snupkg
+*.dll
+*.exe
+
+# Node.js
+node_modules/
+
+# Angular
+dist/
+.angular/
+
+# Misc
+*.bak
+*.tmp
+*.swp
+*~
+
+# Mac
+.DS_Store
+
+# OS
+thumbs.db

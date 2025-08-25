@@ -1,0 +1,12 @@
+
+.register-box {
+  width: 360px;
+  margin: 7% auto;
+}
+
+@media (max-width: 576px) {
+  .register-box {
+    width: 90%;
+    margin-top: 20px;
+  }
+}
