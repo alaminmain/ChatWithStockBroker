@@ -1,0 +1,38 @@
+<div class="container mt-4">
+    <h2>Stock Chart</h2>
+
+    <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Search Company by Name, Code, ISIN, or Instrument" [(ngModel)]="searchQuery" (keyup)="onSearchCompany()">
+    </div>
+
+    <div *ngIf="companies.length > 0" class="list-group mb-3">
+        <a *ngFor="let company of companies" href="#" class="list-group-item list-group-item-action" (click)="selectCompany(company); $event.preventDefault()">
+            {{ company.compNm }} ({{ company.compCd }}) - {{ company.isinCd }}
+        </a>
+    </div>
+
+    <div *ngIf="selectedCompany" class="card mb-3">
+        <div class="card-header">
+            Selected Company: {{ selectedCompany.compNm }} ({{ selectedCompany.compCd }})
+        </div>
+        <div class="card-body">
+            <p><strong>ISIN CD:</strong> {{ selectedCompany.isinCd }}</p>
+            <p><strong>Instrument Code:</strong> {{ selectedCompany.instrCd }}</p>
+            <!-- Add more company info here if needed -->
+        </div>
+    </div>
+
+    <div class="chart-container" *ngIf="marPriceData.length > 0">
+        <apx-chart
+            [series]="chartOptions.series"
+            [chart]="chartOptions.chart"
+            [xaxis]="chartOptions.xaxis"
+            [title]="chartOptions.title"
+            [yaxis]="chartOptions.yaxis"
+        ></apx-chart>
+    </div>
+
+    <div *ngIf="selectedCompany && marPriceData.length === 0" class="alert alert-info">
+        No market price data available for {{ selectedCompany.compNm }}.
+    </div>
+</div>

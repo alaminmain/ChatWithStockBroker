@@ -380,16 +380,76 @@ namespace StockMarket.Api.Controllers
         }
 
         [HttpGet("companies")]
-        public async Task<IActionResult> GetCompanies([FromQuery] string? search = null, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetCompanies([FromQuery] string? search = null, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? sortBy = null, [FromQuery] string? sortDirection = null)
         {
             var query = _context.Comps.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(c => c.CompNm.Contains(search) || c.IsinCd.Contains(search));
+                query = query.Where(c =>
+                    (c.CompNm != null && c.CompNm.Contains(search)) ||
+                    (c.IsinCd != null && c.IsinCd.Contains(search)) ||
+                    (c.RegOff != null && c.RegOff.Contains(search)) ||
+                    (c.InstrCd != null && c.InstrCd.Contains(search)) ||
+                    (c.CatTp != null && c.CatTp.Contains(search)) ||
+                    (c.Add1 != null && c.Add1.Contains(search)) ||
+                    (c.Add2 != null && c.Add2.Contains(search)) ||
+                    (c.Tel != null && c.Tel.Contains(search)) ||
+                    (c.EMail != null && c.EMail.Contains(search)) ||
+                    (c.Prod != null && c.Prod.Contains(search)) ||
+                    (c.Spnr != null && c.Spnr.Contains(search)) ||
+                    (c.Auditor != null && c.Auditor.Contains(search)) ||
+                    (c.CseInstrCd != null && c.CseInstrCd.Contains(search)) ||
+                    (c.MerchanBankId != null && c.MerchanBankId.Contains(search)) ||
+                    (c.TradePlatform != null && c.TradePlatform.Contains(search))
+                );
             }
 
             var totalCount = await query.CountAsync();
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                // Apply sorting dynamically
+                switch (sortBy.ToLower())
+                {
+                    case "compcd":
+                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.CompCd) : query.OrderBy(c => c.CompCd);
+                        break;
+                    case "compnm":
+                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.CompNm) : query.OrderBy(c => c.CompNm);
+                        break;
+                    case "athocap":
+                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.AthoCap) : query.OrderBy(c => c.AthoCap);
+                        break;
+                    case "paidcap":
+                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.PaidCap) : query.OrderBy(c => c.PaidCap);
+                        break;
+                    case "regoff":
+                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.RegOff) : query.OrderBy(c => c.RegOff);
+                        break;
+                    case "noshrs":
+                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.NoShrs) : query.OrderBy(c => c.NoShrs);
+                        break;
+                    case "instrcd":
+                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.InstrCd) : query.OrderBy(c => c.InstrCd);
+                        break;
+                    case "startdt":
+                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.StartDt) : query.OrderBy(c => c.StartDt);
+                        break;
+                    case "fcval":
+                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.FcVal) : query.OrderBy(c => c.FcVal);
+                        break;
+                    default:
+                        // Default sort if sortBy is not recognized
+                        query = query.OrderBy(c => c.Id); // Or any default column
+                        break;
+                }
+            }
+            else
+            {
+                // Always apply a default order for consistent pagination
+                query = query.OrderBy(c => c.Id);
+            }
+
             var companies = await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -407,6 +467,33 @@ namespace StockMarket.Api.Controllers
                 return NotFound();
             }
             return Ok(company);
+        }
+
+        [HttpGet("marprice/{compCd}")]
+        public async Task<IActionResult> GetMarPriceData(int compCd)
+        {
+            // Define the cutoff date for filtering
+            var cutoffDate = new DateTime(2016, 1, 1);
+
+            var marPriceData = await _context.MarPrices
+                .Where(mp => mp.CompCd == compCd && mp.TransDt >= cutoffDate) // Add the date filter
+                .OrderBy(mp => mp.TransDt) // Order by transaction date for chart
+                .Select(mp => new
+                {
+                    mp.TransDt,
+                    mp.Open,
+                    mp.High,
+                    mp.Low,
+                    mp.Close
+                })
+                .ToListAsync();
+
+            if (!marPriceData.Any())
+            {
+                return NotFound($"No market price data found for Company Code: {compCd}");
+            }
+
+            return Ok(marPriceData);
         }
 
         [HttpPost("update-comp-cds")]
