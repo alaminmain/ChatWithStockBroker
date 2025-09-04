@@ -6,22 +6,13 @@
         <button class="btn btn-primary mt-2" (click)="onSearch()">Search</button>
     </div>
 
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Company Name</th>
-                <th>ISIN CD</th>
-                <th>Group</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let company of companies">
-                <td><a href="#" (click)="openCompanyDetails(company.compCd)">{{ company.compNm }}</a></td>
-                <td>{{ company.isinCd }}</td>
-                <td>{{ company.grp }}</td>
-            </tr>
-        </tbody>
-    </table>
+    <ag-grid-angular
+        style="width: 100%; height: 500px;"
+        class="ag-theme-alpine"
+        [rowData]="companies"
+        [columnDefs]="colDefs"
+    >
+    </ag-grid-angular>
 
     <nav>
         <ul class="pagination">

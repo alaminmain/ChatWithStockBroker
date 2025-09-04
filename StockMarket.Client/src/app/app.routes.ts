@@ -30,7 +30,7 @@ export const routes: Routes = [
             { path: 'users', component: UserListComponent },
             { path: 'chat', component: ChatComponent },
             { path: 'stock-list', component: StockListComponent },
-            { path: 'companies', component: CompanyListComponent },
+            { path: 'company-list', component: CompanyListComponent },
             { path: '', redirectTo: 'users', pathMatch: 'full' } // Redirect to users by default within the main layout
         ]
     }

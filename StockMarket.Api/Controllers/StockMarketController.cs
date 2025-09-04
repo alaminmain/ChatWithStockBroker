@@ -379,7 +379,7 @@ namespace StockMarket.Api.Controllers
             return table;
         }
 
-        [HttpGet("comps")]
+        [HttpGet("companies")]
         public async Task<IActionResult> GetCompanies([FromQuery] string? search = null, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             var query = _context.Comps.AsQueryable();

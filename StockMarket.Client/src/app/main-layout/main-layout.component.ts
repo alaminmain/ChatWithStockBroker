@@ -25,6 +25,9 @@ import { CommonModule } from '@angular/common';
           <li class="nav-item">
             <a class="nav-link" routerLink="/stock-list">Stock Prices</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/company-list">Companies</a>
+          </li>
         </ul>
         <ul class="navbar-nav">
           <li class="nav-item" *ngIf="!(isLoggedIn$ | async)">

@@ -4,11 +4,15 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CompanyDetailModalComponent } from '../company-detail-modal/company-detail-modal.component';
+import { AgGridModule } from 'ag-grid-angular';
+import { ColDef, CellClickedEvent, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+
+ModuleRegistry.registerModules([ AllCommunityModule ]);
 
 @Component({
   selector: 'app-company-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CompanyDetailModalComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CompanyDetailModalComponent, AgGridModule],
   templateUrl: './company-list.component.html',
   styleUrl: './company-list.component.css'
 })
@@ -20,6 +24,18 @@ export class CompanyListComponent implements OnInit {
   search: string = '';
   selectedCompanyCompCd: number | null = null;
 
+  colDefs: ColDef[] = [
+    { field: 'compCd', headerName: 'Company Code' },
+    { field: 'compNm', headerName: 'Company Name', onCellClicked: (event) => this.onCellClicked(event) },
+    { field: 'athoCap', headerName: 'Authorized Capital' },
+    { field: 'paidCap', headerName: 'Paid-up Capital' },
+    { field: 'regOff', headerName: 'Registered Office' },
+    { field: 'noShrs', headerName: 'Number of Shares' },
+    { field: 'instrCd', headerName: 'Instrument Code' },
+    { field: 'startDt', headerName: 'Start Date' },
+    { field: 'fcVal', headerName: 'Face Value' }
+  ];
+
   constructor(private companyService: CompanyService) { }
 
   ngOnInit(): void {
@@ -29,8 +45,8 @@ export class CompanyListComponent implements OnInit {
   loadCompanies(): void {
     this.companyService.getCompanies(this.search, this.pageNumber, this.pageSize)
       .subscribe(response => {
-        this.companies = response.Companies;
-        this.totalCount = response.TotalCount;
+        this.companies = response.companies;
+        this.totalCount = response.totalCount;
       });
   }
 
@@ -50,6 +66,10 @@ export class CompanyListComponent implements OnInit {
 
   closeCompanyDetails(): void {
     this.selectedCompanyCompCd = null;
+  }
+
+  onCellClicked(event: CellClickedEvent): void {
+    this.openCompanyDetails(event.data.compCd);
   }
 
   get totalPages(): number {
