@@ -1,0 +1,41 @@
+<div class="container mt-4">
+    <h2>Company List</h2>
+
+    <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Search by Company Name or ISIN CD" [(ngModel)]="search" (keyup.enter)="onSearch()">
+        <button class="btn btn-primary mt-2" (click)="onSearch()">Search</button>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Company Name</th>
+                <th>ISIN CD</th>
+                <th>Group</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let company of companies">
+                <td><a href="#" (click)="openCompanyDetails(company.compCd)">{{ company.compNm }}</a></td>
+                <td>{{ company.isinCd }}</td>
+                <td>{{ company.grp }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <nav>
+        <ul class="pagination">
+            <li class="page-item" [class.disabled]="pageNumber === 1">
+                <a class="page-link" (click)="onPageChange(pageNumber - 1)">Previous</a>
+            </li>
+            <li class="page-item" *ngFor="let page of pages" [class.active]="page === pageNumber">
+                <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
+            </li>
+            <li class="page-item" [class.disabled]="pageNumber === totalPages">
+                <a class="page-link" (click)="onPageChange(pageNumber + 1)">Next</a>
+            </li>
+        </ul>
+    </nav>
+
+    <app-company-detail-modal *ngIf="selectedCompanyCompCd" [compCd]="selectedCompanyCompCd" (close)="closeCompanyDetails()"></app-company-detail-modal>
+</div>

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StockMarket.Api.Data;
 
@@ -11,9 +12,11 @@ using StockMarket.Api.Data;
 namespace StockMarket.Api.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250904043429_IncreaseRegOffLengthInComp")]
+    partial class IncreaseRegOffLengthInComp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -214,7 +217,7 @@ namespace StockMarket.Api.Data.Migrations
                         .HasColumnType("nvarchar(1)")
                         .HasColumnName("CFLAG");
 
-                    b.Property<int?>("CompCd")
+                    b.Property<int>("CompCd")
                         .HasColumnType("int")
                         .HasColumnName("COMP_CD");
 
@@ -366,6 +369,7 @@ namespace StockMarket.Api.Data.Migrations
                         .HasColumnName("PROD");
 
                     b.Property<string>("RegOff")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 

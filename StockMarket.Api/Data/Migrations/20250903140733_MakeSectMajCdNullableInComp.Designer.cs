@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StockMarket.Api.Data;
 
@@ -11,9 +12,11 @@ using StockMarket.Api.Data;
 namespace StockMarket.Api.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250903140733_MakeSectMajCdNullableInComp")]
+    partial class MakeSectMajCdNullableInComp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -157,11 +160,12 @@ namespace StockMarket.Api.Data.Migrations
 
             modelBuilder.Entity("StockMarket.Api.Models.Comp", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("CompCd")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("COMP_CD");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CompCd"));
 
                     b.Property<string>("Add1")
                         .HasMaxLength(50)
@@ -214,11 +218,8 @@ namespace StockMarket.Api.Data.Migrations
                         .HasColumnType("nvarchar(1)")
                         .HasColumnName("CFLAG");
 
-                    b.Property<int?>("CompCd")
-                        .HasColumnType("int")
-                        .HasColumnName("COMP_CD");
-
                     b.Property<string>("CompNm")
+                        .IsRequired()
                         .HasMaxLength(80)
                         .HasColumnType("nvarchar(80)")
                         .HasColumnName("COMP_NM");
@@ -366,8 +367,9 @@ namespace StockMarket.Api.Data.Migrations
                         .HasColumnName("PROD");
 
                     b.Property<string>("RegOff")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("REG_OFF");
 
                     b.Property<DateTime?>("RissuDtFm")
                         .HasColumnType("datetime2")
@@ -429,7 +431,7 @@ namespace StockMarket.Api.Data.Migrations
                         .HasColumnType("nvarchar(2)")
                         .HasColumnName("TRADE_PLATFORM");
 
-                    b.HasKey("Id");
+                    b.HasKey("CompCd");
 
                     b.HasIndex("SectMajCd");
 

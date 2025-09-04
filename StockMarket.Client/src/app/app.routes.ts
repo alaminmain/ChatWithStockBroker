@@ -7,6 +7,7 @@ import { ChatComponent } from './chat/chat.component';
 import { AuthLayoutComponent } from './auth-layout/auth-layout.component';
 import { MainLayoutComponent } from './main-layout/main-layout.component';
 import { StockListComponent } from './stock-list/stock-list.component';
+import { CompanyListComponent } from './company-list/company-list.component';
 
 export const routes: Routes = [
     {
@@ -29,6 +30,7 @@ export const routes: Routes = [
             { path: 'users', component: UserListComponent },
             { path: 'chat', component: ChatComponent },
             { path: 'stock-list', component: StockListComponent },
+            { path: 'companies', component: CompanyListComponent },
             { path: '', redirectTo: 'users', pathMatch: 'full' } // Redirect to users by default within the main layout
         ]
     }

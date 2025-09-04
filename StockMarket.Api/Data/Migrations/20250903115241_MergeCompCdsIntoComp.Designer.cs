@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StockMarket.Api.Data;
 
@@ -11,9 +12,11 @@ using StockMarket.Api.Data;
 namespace StockMarket.Api.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250903115241_MergeCompCdsIntoComp")]
+    partial class MergeCompCdsIntoComp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -157,11 +160,12 @@ namespace StockMarket.Api.Data.Migrations
 
             modelBuilder.Entity("StockMarket.Api.Models.Comp", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("CompCd")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("COMP_CD");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CompCd"));
 
                     b.Property<string>("Add1")
                         .HasMaxLength(50)
@@ -214,11 +218,8 @@ namespace StockMarket.Api.Data.Migrations
                         .HasColumnType("nvarchar(1)")
                         .HasColumnName("CFLAG");
 
-                    b.Property<int?>("CompCd")
-                        .HasColumnType("int")
-                        .HasColumnName("COMP_CD");
-
                     b.Property<string>("CompNm")
+                        .IsRequired()
                         .HasMaxLength(80)
                         .HasColumnType("nvarchar(80)")
                         .HasColumnName("COMP_NM");
@@ -366,8 +367,9 @@ namespace StockMarket.Api.Data.Migrations
                         .HasColumnName("PROD");
 
                     b.Property<string>("RegOff")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("REG_OFF");
 
                     b.Property<DateTime?>("RissuDtFm")
                         .HasColumnType("datetime2")
@@ -386,6 +388,7 @@ namespace StockMarket.Api.Data.Migrations
                         .HasColumnName("SBASE_RT");
 
                     b.Property<string>("SectMajCd")
+                        .IsRequired()
                         .HasMaxLength(2)
                         .HasColumnType("nvarchar(2)")
                         .HasColumnName("SECT_MAJ_CD");
@@ -429,104 +432,11 @@ namespace StockMarket.Api.Data.Migrations
                         .HasColumnType("nvarchar(2)")
                         .HasColumnName("TRADE_PLATFORM");
 
-                    b.HasKey("Id");
+                    b.HasKey("CompCd");
 
                     b.HasIndex("SectMajCd");
 
                     b.ToTable("COMP");
-                });
-
-            modelBuilder.Entity("StockMarket.Api.Models.MarPrice", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal?>("AvrgRt")
-                        .HasColumnType("decimal(12, 4)")
-                        .HasColumnName("AVRG_RT");
-
-                    b.Property<decimal?>("Chg")
-                        .HasColumnType("decimal(18, 2)")
-                        .HasColumnName("CHG");
-
-                    b.Property<decimal?>("Close")
-                        .HasColumnType("decimal(18, 2)")
-                        .HasColumnName("CLOSE");
-
-                    b.Property<int?>("CompCd")
-                        .HasColumnType("int")
-                        .HasColumnName("COMP_CD");
-
-                    b.Property<decimal?>("DsexIndx")
-                        .HasColumnType("decimal(10, 2)")
-                        .HasColumnName("DSEX_INDX");
-
-                    b.Property<decimal?>("GenIndx")
-                        .HasColumnType("decimal(10, 2)")
-                        .HasColumnName("GEN_INDX");
-
-                    b.Property<string>("Grp")
-                        .HasMaxLength(1)
-                        .HasColumnType("nvarchar(1)")
-                        .HasColumnName("GRP");
-
-                    b.Property<decimal?>("High")
-                        .HasColumnType("decimal(18, 2)")
-                        .HasColumnName("HIGH");
-
-                    b.Property<decimal?>("IndxChg")
-                        .HasColumnType("decimal(18, 2)")
-                        .HasColumnName("INDX_CHG");
-
-                    b.Property<string>("InstCd")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("INST_CD");
-
-                    b.Property<string>("IsinCd")
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)")
-                        .HasColumnName("ISIN_CD");
-
-                    b.Property<decimal?>("Low")
-                        .HasColumnType("decimal(18, 2)")
-                        .HasColumnName("LOW");
-
-                    b.Property<decimal?>("MarkCap")
-                        .HasColumnType("decimal(18, 2)")
-                        .HasColumnName("MARK_CAP");
-
-                    b.Property<string>("MarkTp")
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)")
-                        .HasColumnName("MARK_TP");
-
-                    b.Property<decimal?>("Open")
-                        .HasColumnType("decimal(18, 2)")
-                        .HasColumnName("OPEN");
-
-                    b.Property<decimal?>("TVal")
-                        .HasColumnType("decimal(20, 2)")
-                        .HasColumnName("T_VAL");
-
-                    b.Property<DateTime?>("TransDt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("TRANS_DT");
-
-                    b.Property<decimal?>("Val")
-                        .HasColumnType("decimal(18, 2)")
-                        .HasColumnName("VAL");
-
-                    b.Property<decimal?>("Vol")
-                        .HasColumnType("decimal(18, 2)")
-                        .HasColumnName("VOL");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MAR_PRICE");
                 });
 
             modelBuilder.Entity("StockMarket.Api.Models.SectMaj", b =>
@@ -690,7 +600,9 @@ namespace StockMarket.Api.Data.Migrations
                 {
                     b.HasOne("StockMarket.Api.Models.SectMaj", "SectMaj")
                         .WithMany("Comps")
-                        .HasForeignKey("SectMajCd");
+                        .HasForeignKey("SectMajCd")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("SectMaj");
                 });
