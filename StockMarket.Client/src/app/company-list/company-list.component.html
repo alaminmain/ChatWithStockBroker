@@ -6,13 +6,13 @@
         <button class="btn btn-primary mt-2" (click)="onSearch()">Search</button>
     </div>
 
-    <ag-grid-angular
-        style="width: 100%; height: 500px;"
-        class="ag-theme-alpine"
-        [rowData]="companies"
-        [columnDefs]="colDefs"
-    >
-    </ag-grid-angular>
+    <div class="ag-theme-alpine" style="width: 100%; height: 500px;">
+      <ag-grid-angular
+          [rowData]="companies"
+          [columnDefs]="colDefs"
+      >
+      </ag-grid-angular>
+    </div>
 
     <nav>
         <ul class="pagination">
