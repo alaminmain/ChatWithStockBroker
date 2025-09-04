@@ -11,18 +11,34 @@ export class CompanyService {
 
   constructor(private http: HttpClient) { }
 
-  getCompanies(search: string = '', pageNumber: number = 1, pageSize: number = 10): Observable<any> {
+  getCompanies(
+    search: string = '',
+    pageNumber: number = 1,
+    pageSize: number = 10,
+    sortBy: string = '',
+    sortDirection: string = ''
+  ): Observable<any> {
     let params = new HttpParams();
     if (search) {
       params = params.append('search', search);
     }
     params = params.append('pageNumber', pageNumber.toString());
     params = params.append('pageSize', pageSize.toString());
+    if (sortBy) {
+      params = params.append('sortBy', sortBy);
+    }
+    if (sortDirection) {
+      params = params.append('sortDirection', sortDirection);
+    }
 
     return this.http.get(`${this.apiUrl}/companies`, { params });
   }
 
   getCompanyDetails(compCd: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/companies/${compCd}`);
+  }
+
+  getMarPriceData(compCd: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/marprice/${compCd}`);
   }
 }

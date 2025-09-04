@@ -1,0 +1,342 @@
+CREATE TABLE COMP_CDS
+(
+  COMP_CD   NUMBER(3)                           NOT NULL,
+  COMP_NM   VARCHAR2(80 BYTE),
+  ISIN_CD   VARCHAR2(15 BYTE),
+  START_DT  DATE,
+  LDRN      NUMBER(6)
+)
+TABLESPACE USERS
+RESULT_CACHE (MODE DEFAULT)
+PCTUSED    0
+PCTFREE    10
+INITRANS   1
+MAXTRANS   255
+STORAGE    (
+            INITIAL          128K
+            NEXT             1M
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      DEFAULT
+            FLASH_CACHE      DEFAULT
+            CELL_FLASH_CACHE DEFAULT
+           )
+LOGGING 
+NOCOMPRESS 
+NOCACHE
+NOPARALLEL
+MONITORING;
+
+
+CREATE TABLE SECT_MAJ
+(
+  SECT_MAJ_CD  VARCHAR2(2 BYTE),
+  SECT_MAJ_NM  VARCHAR2(40 BYTE)                NOT NULL
+)
+TABLESPACE USERS
+RESULT_CACHE (MODE DEFAULT)
+PCTUSED    0
+PCTFREE    10
+INITRANS   1
+MAXTRANS   255
+STORAGE    (
+            INITIAL          12M
+            NEXT             1M
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      DEFAULT
+            FLASH_CACHE      DEFAULT
+            CELL_FLASH_CACHE DEFAULT
+           )
+LOGGING 
+NOCOMPRESS 
+CACHE
+NOPARALLEL
+MONITORING;
+
+
+CREATE TABLE SECT_MIN
+(
+  SECT_MIN_CD  VARCHAR2(2 BYTE),
+  SECT_MAJ_CD  VARCHAR2(2 BYTE),
+  SECT_MIN_NM  VARCHAR2(40 BYTE)                NOT NULL
+)
+TABLESPACE USERS
+RESULT_CACHE (MODE DEFAULT)
+PCTUSED    0
+PCTFREE    10
+INITRANS   1
+MAXTRANS   255
+STORAGE    (
+            INITIAL          12M
+            NEXT             1M
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      DEFAULT
+            FLASH_CACHE      DEFAULT
+            CELL_FLASH_CACHE DEFAULT
+           )
+LOGGING 
+NOCOMPRESS 
+CACHE
+NOPARALLEL
+MONITORING;
+
+
+CREATE UNIQUE INDEX COMPCDS_CD_PK ON COMP_CDS
+(COMP_CD)
+NOLOGGING
+TABLESPACE USERS
+PCTFREE    10
+INITRANS   2
+MAXTRANS   255
+STORAGE    (
+            INITIAL          128K
+            NEXT             1M
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      DEFAULT
+            FLASH_CACHE      DEFAULT
+            CELL_FLASH_CACHE DEFAULT
+           )
+NOPARALLEL;
+
+
+--  There is no statement for index INVEST.SYS_C0027822.
+--  The object is created when the parent object is created.
+
+--  There is no statement for index INVEST.SYS_C0027824.
+--  The object is created when the parent object is created.
+
+CREATE TABLE COMP
+(
+  COMP_CD          NUMBER(3),
+  COMP_NM          VARCHAR2(80 BYTE)            NOT NULL,
+  SECT_MAJ_CD      VARCHAR2(2 BYTE)             NOT NULL,
+  SECT_MIN_CD      VARCHAR2(2 BYTE),
+  INSTR_CD         VARCHAR2(20 BYTE)            NOT NULL,
+  CAT_TP           VARCHAR2(2 BYTE)             NOT NULL,
+  ADD1             VARCHAR2(50 BYTE),
+  ADD2             VARCHAR2(50 BYTE),
+  REG_OFF          VARCHAR2(100 BYTE),
+  PRN_STH          VARCHAR2(100 BYTE),
+  OPN_DT           DATE,
+  TAX_HDAY         CHAR(1 BYTE),
+  TEL              VARCHAR2(50 BYTE),
+  TLX              VARCHAR2(30 BYTE),
+  E_MAIL           VARCHAR2(50 BYTE),
+  PROD             VARCHAR2(50 BYTE),
+  PRO_VOL          VARCHAR2(30 BYTE),
+  SPNR             VARCHAR2(50 BYTE),
+  ATHO_CAP         NUMBER(17,2),
+  PAID_CAP         NUMBER(17,2)                 NOT NULL,
+  NO_SHRS          NUMBER(17,2)                 NOT NULL,
+  FC_VAL           NUMBER(12,2)                 NOT NULL,
+  MLOT             NUMBER(5)                    NOT NULL,
+  SBASE_RT         NUMBER(10,4)                 NOT NULL,
+  FLOT_DT_FM       DATE,
+  FLOT_DT_TO       DATE,
+  BOK_CL_FDT       DATE,
+  BOK_CL_TDT       DATE,
+  MARGIN           NUMBER(3),
+  AVG_RT           NUMBER(12,4),
+  RT_UPD_DT        DATE,
+  FLAG             CHAR(1 BYTE),
+  AUDITOR          VARCHAR2(30 BYTE),
+  NS_ICB           NUMBER(17,2),
+  NS_UNIT          NUMBER(17,2),
+  NS_MUTUAL        NUMBER(17,2),
+  PMARGIN          NUMBER(4),
+  RISSU_DT_FM      DATE,
+  RISSU_DT_TO      DATE,
+  PREMIUM          NUMBER(6,2),
+  CFLAG            CHAR(1 BYTE),
+  MAR_FLOAT        NUMBER(12),
+  MON_TO           CHAR(1 BYTE),
+  TRADE_METH       CHAR(1 BYTE),
+  CSEINSTR_CD      VARCHAR2(20 BYTE),
+  INDX_LST         NUMBER(13,4),
+  BASE_UPD_DT      DATE,
+  CDS              CHAR(1 BYTE),
+  CTL_RT           NUMBER(10,2),
+  NET              CHAR(1 BYTE),
+  GRP              CHAR(1 BYTE),
+  MERCHAN_BANK_ID  VARCHAR2(6 BYTE),
+  OTC              CHAR(1 BYTE),
+  IPO_CUTOFF_DT    DATE,
+  TRADE_PLATFORM   VARCHAR2(2 BYTE),
+  PE_RATIO         NUMBER
+)
+TABLESPACE USERS
+RESULT_CACHE (MODE DEFAULT)
+PCTUSED    0
+PCTFREE    10
+INITRANS   1
+MAXTRANS   255
+STORAGE    (
+            INITIAL          12M
+            NEXT             1M
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      DEFAULT
+            FLASH_CACHE      DEFAULT
+            CELL_FLASH_CACHE DEFAULT
+           )
+LOGGING 
+NOCOMPRESS 
+NOCACHE
+NOPARALLEL
+MONITORING;
+
+
+CREATE UNIQUE INDEX COMP_INSTR_CD1 ON COMP
+(INSTR_CD)
+LOGGING
+TABLESPACE USERS
+PCTFREE    10
+INITRANS   2
+MAXTRANS   255
+STORAGE    (
+            INITIAL          64K
+            NEXT             1M
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      DEFAULT
+            FLASH_CACHE      DEFAULT
+            CELL_FLASH_CACHE DEFAULT
+           )
+NOPARALLEL;
+
+
+--  There is no statement for index INVEST.SYS_C0027071.
+--  The object is created when the parent object is created.
+
+/* Formatted on 9/2/2025 5:49:28 PM (QP5 v5.215.12089.38647) */
+CREATE OR REPLACE TRIGGER COMP_TRADE_METH_UPD_TRIG
+   BEFORE UPDATE OF TRADE_METH
+   ON COMP
+   REFERENCING NEW AS NEW OLD AS OLD
+   FOR EACH ROW
+BEGIN
+   IF :new.trade_meth = 'S'
+   THEN
+      :new.trade_meth := 'R';
+   END IF;
+END;
+/
+
+
+ALTER TABLE COMP_CDS ADD (
+  CONSTRAINT COMPCDS_CD_PK
+  PRIMARY KEY
+  (COMP_CD)
+  USING INDEX COMPCDS_CD_PK
+  ENABLE VALIDATE);
+
+ALTER TABLE SECT_MAJ ADD (
+  PRIMARY KEY
+  (SECT_MAJ_CD)
+  USING INDEX
+    TABLESPACE USERS
+    PCTFREE    10
+    INITRANS   2
+    MAXTRANS   255
+    STORAGE    (
+                INITIAL          12M
+                NEXT             1M
+                MINEXTENTS       1
+                MAXEXTENTS       UNLIMITED
+                PCTINCREASE      0
+                BUFFER_POOL      DEFAULT
+                FLASH_CACHE      DEFAULT
+                CELL_FLASH_CACHE DEFAULT
+               )
+  ENABLE VALIDATE);
+
+ALTER TABLE SECT_MIN ADD (
+  PRIMARY KEY
+  (SECT_MIN_CD)
+  USING INDEX
+    TABLESPACE USERS
+    PCTFREE    10
+    INITRANS   2
+    MAXTRANS   255
+    STORAGE    (
+                INITIAL          12M
+                NEXT             1M
+                MINEXTENTS       1
+                MAXEXTENTS       UNLIMITED
+                PCTINCREASE      0
+                BUFFER_POOL      DEFAULT
+                FLASH_CACHE      DEFAULT
+                CELL_FLASH_CACHE DEFAULT
+               )
+  ENABLE VALIDATE);
+
+ALTER TABLE COMP ADD (
+  PRIMARY KEY
+  (COMP_CD)
+  USING INDEX
+    TABLESPACE USERS
+    PCTFREE    10
+    INITRANS   2
+    MAXTRANS   255
+    STORAGE    (
+                INITIAL          12M
+                NEXT             1M
+                MINEXTENTS       1
+                MAXEXTENTS       UNLIMITED
+                PCTINCREASE      0
+                BUFFER_POOL      DEFAULT
+                FLASH_CACHE      DEFAULT
+                CELL_FLASH_CACHE DEFAULT
+               )
+  ENABLE VALIDATE);
+
+ALTER TABLE COMP ADD (
+  FOREIGN KEY (SECT_MAJ_CD) 
+  REFERENCES SECT_MAJ (SECT_MAJ_CD)
+  ENABLE VALIDATE);
+
+GRANT SELECT ON COMP_CDS TO ALL_SELECT;
+
+GRANT SELECT ON SECT_MAJ TO ALL_SELECT;
+
+GRANT SELECT ON SECT_MIN TO ALL_SELECT;
+
+GRANT INSERT ON COMP_CDS TO MOMS_INVESTORS_INSERT;
+
+GRANT INSERT ON SECT_MAJ TO MOMS_INVESTORS_INSERT;
+
+GRANT INSERT ON SECT_MIN TO MOMS_INVESTORS_INSERT;
+
+GRANT SELECT ON COMP_CDS TO MOMS_INVESTORS_SELECT;
+
+GRANT SELECT ON SECT_MAJ TO MOMS_INVESTORS_SELECT;
+
+GRANT SELECT ON SECT_MIN TO MOMS_INVESTORS_SELECT;
+
+GRANT UPDATE ON COMP_CDS TO MOMS_INVESTORS_UPDATE;
+
+GRANT SELECT ON COMP_CDS TO MOMS_SHARES_SELECT;
+
+GRANT SELECT ON SECT_MAJ TO PFMS_USER;
+
+GRANT SELECT ON COMP TO ALL_SELECT;
+
+GRANT INSERT ON COMP TO MOMS_INVESTORS_INSERT;
+
+GRANT SELECT ON COMP TO MOMS_INVESTORS_SELECT;
+
+GRANT UPDATE ON COMP TO MOMS_INVESTORS_UPDATE;
+
+GRANT SELECT ON COMP TO MOMS_SHARES_SELECT;
+
+GRANT SELECT ON COMP TO PFMS_USER;
+

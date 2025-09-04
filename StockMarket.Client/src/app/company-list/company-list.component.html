@@ -1,32 +1,83 @@
 <div class="container mt-4">
     <h2>Company List</h2>
 
-    <div class="mb-3">
-        <input type="text" class="form-control" placeholder="Search by Company Name or ISIN CD" [(ngModel)]="search" (keyup.enter)="onSearch()">
-        <button class="btn btn-primary mt-2" (click)="onSearch()">Search</button>
+    <mat-form-field>
+        <mat-label>Search</mat-label>
+        <input matInput [(ngModel)]="search" (keyup)="onSearch()" placeholder="Ex. Company Name or ISIN CD">
+    </mat-form-field>
+
+    <div class="mat-elevation-z8">
+        <table mat-table [dataSource]="dataSource" matSort matSortActive="compNm" matSortDirection="asc" matSortDisableClear>
+
+            <!-- Company Code Column -->
+            <ng-container matColumnDef="compCd">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Company Code </th>
+                <td mat-cell *matCellDef="let row"> {{row.compCd}} </td>
+            </ng-container>
+
+            <!-- Company Name Column -->
+            <ng-container matColumnDef="compNm">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Company Name </th>
+                <td mat-cell *matCellDef="let row">
+                    <a href="#" (click)="openCompanyDetails(row.compCd); $event.preventDefault()">{{ row.compNm }}</a>
+                </td>
+            </ng-container>
+
+            <!-- Authorized Capital Column -->
+            <ng-container matColumnDef="athoCap">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Authorized Capital </th>
+                <td mat-cell *matCellDef="let row"> {{row.athoCap}} </td>
+            </ng-container>
+
+            <!-- Paid-up Capital Column -->
+            <ng-container matColumnDef="paidCap">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Paid-up Capital </th>
+                <td mat-cell *matCellDef="let row"> {{row.paidCap}} </td>
+            </ng-container>
+
+            <!-- Registered Office Column -->
+            <ng-container matColumnDef="regOff">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Registered Office </th>
+                <td mat-cell *matCellDef="let row"> {{row.regOff}} </td>
+            </ng-container>
+
+            <!-- Number of Shares Column -->
+            <ng-container matColumnDef="noShrs">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Number of Shares </th>
+                <td mat-cell *matCellDef="let row"> {{row.noShrs}} </td>
+            </ng-container>
+
+            <!-- Instrument Code Column -->
+            <ng-container matColumnDef="instrCd">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Instrument Code </th>
+                <td mat-cell *matCellDef="let row"> {{row.instrCd}} </td>
+            </ng-container>
+
+            <!-- Start Date Column -->
+            <ng-container matColumnDef="startDt">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Start Date </th>
+                <td mat-cell *matCellDef="let row"> {{row.startDt | date}} </td>
+            </ng-container>
+
+            <!-- Face Value Column -->
+            <ng-container matColumnDef="fcVal">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Face Value </th>
+                <td mat-cell *matCellDef="let row"> {{row.fcVal}} </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef> Actions </th>
+                <td mat-cell *matCellDef="let row">
+                    <button mat-raised-button color="primary" (click)="openCompanyDetails(row.compCd)">Details</button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <mat-paginator [length]="resultsLength" [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of companies"></mat-paginator>
     </div>
 
-    <div class="ag-theme-alpine" style="width: 100%; height: 500px;">
-      <ag-grid-angular
-          [rowData]="companies"
-          [columnDefs]="colDefs"
-      >
-      </ag-grid-angular>
     </div>
-
-    <nav>
-        <ul class="pagination">
-            <li class="page-item" [class.disabled]="pageNumber === 1">
-                <a class="page-link" (click)="onPageChange(pageNumber - 1)">Previous</a>
-            </li>
-            <li class="page-item" *ngFor="let page of pages" [class.active]="page === pageNumber">
-                <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
-            </li>
-            <li class="page-item" [class.disabled]="pageNumber === totalPages">
-                <a class="page-link" (click)="onPageChange(pageNumber + 1)">Next</a>
-            </li>
-        </ul>
-    </nav>
-
-    <app-company-detail-modal *ngIf="selectedCompanyCompCd" [compCd]="selectedCompanyCompCd" (close)="closeCompanyDetails()"></app-company-detail-modal>
-</div>
