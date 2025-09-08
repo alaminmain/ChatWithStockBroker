@@ -470,13 +470,38 @@ namespace StockMarket.Api.Controllers
         }
 
         [HttpGet("marprice/{compCd}")]
-        public async Task<IActionResult> GetMarPriceData(int compCd)
+        public async Task<IActionResult> GetMarPriceData(int? compCd, [FromQuery] string period = "1y")
         {
-            // Define the cutoff date for filtering
-            var cutoffDate = new DateTime(2016, 1, 1);
+            if (!compCd.HasValue)
+            {
+                return BadRequest("Company code cannot be null.");
+            }
 
-            var marPriceData = await _context.MarPrices
-                .Where(mp => mp.CompCd == compCd && mp.TransDt >= cutoffDate) // Add the date filter
+            var query = _context.MarPrices.Where(mp => mp.CompCd == compCd.Value);
+
+            DateTime? cutoffDate = null;
+            switch (period.ToLower())
+            {
+                case "2y":
+                    cutoffDate = DateTime.Now.AddYears(-2);
+                    break;
+                case "5y":
+                    cutoffDate = DateTime.Now.AddYears(-5);
+                    break;
+                case "all":
+                    break;
+                case "1y":
+                default:
+                    cutoffDate = DateTime.Now.AddYears(-1);
+                    break;
+            }
+
+            if(cutoffDate.HasValue)
+            {
+                query = query.Where(mp => mp.TransDt >= cutoffDate.Value);
+            }
+
+            var marPriceData = await query
                 .OrderBy(mp => mp.TransDt) // Order by transaction date for chart
                 .Select(mp => new
                 {

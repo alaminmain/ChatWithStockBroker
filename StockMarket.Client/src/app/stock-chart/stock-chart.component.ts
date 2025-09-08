@@ -45,6 +45,7 @@ export class StockChartComponent implements OnInit {
   companies: any[] = [];
   selectedCompany: any = null;
   marPriceData: any[] = [];
+  selectedPeriod: string = '1y';
 
   public chartOptions: Partial<ChartOptions> | any; // Use Partial<ChartOptions> for flexibility
 
@@ -99,7 +100,7 @@ export class StockChartComponent implements OnInit {
   }
 
   loadMarPriceData(compCd: number): void {
-    this.companyService.getMarPriceData(compCd) // Assuming you add this method to CompanyService
+    this.companyService.getMarPriceData(compCd, this.selectedPeriod) // Assuming you add this method to CompanyService
       .subscribe(data => {
         this.marPriceData = data;
         this.updateChartSeries(data);
@@ -108,6 +109,13 @@ export class StockChartComponent implements OnInit {
         this.marPriceData = [];
         this.updateChartSeries([]);
       });
+  }
+
+  onPeriodChange(period: string): void {
+    this.selectedPeriod = period;
+    if (this.selectedCompany) {
+      this.loadMarPriceData(this.selectedCompany.compCd);
+    }
   }
 
   updateChartSeries(data: any[]): void {

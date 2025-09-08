@@ -38,7 +38,7 @@ export class CompanyService {
     return this.http.get(`${this.apiUrl}/companies/${compCd}`);
   }
 
-  getMarPriceData(compCd: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/marprice/${compCd}`);
+  getMarPriceData(compCd: number, period: string = '1y'): Observable<any> {
+    return this.http.get(`${this.apiUrl}/marprice/${compCd}?period=${period}`);
   }
 }

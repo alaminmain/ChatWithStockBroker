@@ -22,6 +22,16 @@
         </div>
     </div>
 
+    <div *ngIf="selectedCompany" class="mb-3">
+        <label for="period-select" class="form-label">Select Period:</label>
+        <select id="period-select" class="form-select" [ngModel]="selectedPeriod" (ngModelChange)="onPeriodChange($event)">
+            <option value="1y">1 Year</option>
+            <option value="2y">2 Years</option>
+            <option value="5y">5 Years</option>
+            <option value="all">All</option>
+        </select>
+    </div>
+
     <div class="chart-container" *ngIf="marPriceData.length > 0">
         <apx-chart
             [series]="chartOptions.series"
