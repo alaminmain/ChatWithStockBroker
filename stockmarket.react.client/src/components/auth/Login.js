@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -8,10 +8,19 @@ const Login = () => {
     password: ''
   });
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const { currentUser, login } = useAuth();
   const navigate = useNavigate();
 
+  console.log('Login component rendered, currentUser:', currentUser);
+
   const { email, password } = formData;
+
+  useEffect(() => {
+    console.log('Login useEffect triggered, currentUser:', currentUser);
+    if (currentUser) {
+      navigate('/');
+    }
+  }, [currentUser, navigate]);
 
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -19,7 +28,6 @@ const Login = () => {
     e.preventDefault();
     try {
       await login(email, password);
-      navigate('/');
     } catch (err) {
       setError('Failed to log in');
     }

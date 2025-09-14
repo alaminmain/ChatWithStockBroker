@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StockMarket.Api.Data;
 
@@ -11,9 +12,11 @@ using StockMarket.Api.Data;
 namespace StockMarket.Api.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250914084217_AddFundamentalDataToComp")]
+    partial class AddFundamentalDataToComp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -233,8 +236,8 @@ namespace StockMarket.Api.Data.Migrations
                         .HasColumnName("CTL_RT");
 
                     b.Property<string>("EMail")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("E_MAIL");
 
                     b.Property<decimal?>("EarningPerShare")
@@ -446,8 +449,8 @@ namespace StockMarket.Api.Data.Migrations
                         .HasColumnName("TAX_HDAY");
 
                     b.Property<string>("Tel")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("TEL");
 
                     b.Property<string>("Tlx")

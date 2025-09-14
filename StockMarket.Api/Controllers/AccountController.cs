@@ -4,6 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using StockMarket.Api.Models;
 using StockMarket.Api.Controllers.Models;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System;
 
 namespace StockMarket.Api.Controllers
 {
@@ -13,11 +19,13 @@ namespace StockMarket.Api.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly IConfiguration _configuration;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _configuration = configuration;
         }
 
         [HttpPost("register")]
@@ -33,7 +41,7 @@ namespace StockMarket.Api.Controllers
             if (result.Succeeded)
             {
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                return Ok();
+                return Ok(GenerateJwtToken(user));
             }
 
             return BadRequest(result.Errors);
@@ -41,7 +49,7 @@ namespace StockMarket.Api.Controllers
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginModel model)
-        {
+        { 
             if (model.Email == null || model.Password == null)
             {
                 return BadRequest("Email and password are required.");
@@ -50,7 +58,8 @@ namespace StockMarket.Api.Controllers
 
             if (result.Succeeded)
             {
-                return Ok();
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                return Ok(GenerateJwtToken(user));
             }
 
             return BadRequest("Invalid login attempt.");
@@ -61,6 +70,32 @@ namespace StockMarket.Api.Controllers
         {
             await _signInManager.SignOutAsync();
             return Ok();
+        }
+
+        private object GenerateJwtToken(User user)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email)
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"],
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+
+            return new
+            {
+                token = tokenString,
+                user = new { email = user.Email, username = user.UserName }
+            };
         }
     }
 }

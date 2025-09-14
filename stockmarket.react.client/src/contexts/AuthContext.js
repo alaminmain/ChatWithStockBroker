@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useMemo } from 'react';
 import authService from '../services/authService';
 
 const AuthContext = createContext();
@@ -12,7 +12,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = (email, password) => {
     return authService.login(email, password).then(user => {
+      console.log('AuthContext: setting user:', user);
       setCurrentUser(user);
+      return user;
     });
   };
 
@@ -21,11 +23,11 @@ export const AuthProvider = ({ children }) => {
     setCurrentUser(null);
   };
 
-  const value = {
+  const value = useMemo(() => ({
     currentUser,
     login,
     logout,
-  };
+  }), [currentUser]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

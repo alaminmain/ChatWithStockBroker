@@ -21,9 +21,11 @@ namespace StockMarket.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<object>>> GetUsers()
         {
-            return await _userManager.Users.ToListAsync();
+            return await _userManager.Users
+                .Select(u => new { u.Id, u.UserName, u.Email })
+                .ToListAsync();
         }
     }
 }

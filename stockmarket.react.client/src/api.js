@@ -1,13 +1,29 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_URL = 'http://localhost:5000/api/StockMarket'; // Assuming the API is running on port 5000
+const API_URL = process.env.REACT_APP_API_URL;
 
-export const getCompanies = (search) => {
-  return axios.get(`${API_URL}/companies`, {
-    params: { search, pageNumber: 1, pageSize: 10 }
+export const getCompanies = (
+  search,
+  pageNumber,
+  pageSize,
+  sortBy,
+  sortDirection
+) => {
+  return axios.get(`${API_URL}/StockMarket/companies`, {
+    params: { search, pageNumber, pageSize, sortBy, sortDirection },
   });
 };
 
 export const getMarPriceData = (compCd, period) => {
-  return axios.get(`${API_URL}/marprice/${compCd}?period=${period}`);
+  return axios.get(
+    `${API_URL}/StockMarket/marprice/${compCd}?period=${period}`
+  );
+};
+
+export const getUsers = () => {
+  return axios.get(`${API_URL}/Users`);
+};
+
+export const getLatestStockPrices = () => {
+  return axios.get(`${API_URL}/StockMarket/stocks/latest`);
 };

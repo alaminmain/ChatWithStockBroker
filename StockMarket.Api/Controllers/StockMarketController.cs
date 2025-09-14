@@ -14,9 +14,25 @@ using StockMarket.Api.Models.Maps;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.ComponentModel;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace StockMarket.Api.Controllers
 {
+    public class FundamentalDataItem
+    {
+        [JsonPropertyName("code")]
+        public string Code { get; set; }
+
+        [JsonPropertyName("meta_key")]
+        public string MetaKey { get; set; }
+
+        [JsonPropertyName("meta_value")]
+        public string MetaValue { get; set; }
+
+        [JsonPropertyName("meta_date")]
+        public string MetaDate { get; set; }
+    }
     [Route("api/[controller]")]
     [ApiController]
     public class StockMarketController : ControllerBase
@@ -26,6 +42,101 @@ namespace StockMarket.Api.Controllers
         public StockMarketController(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        [HttpPost("import-fundamental-data")]
+        public async Task<IActionResult> ImportFundamentalData()
+        {
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "FundementalData.json");
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound("FundementalData.json not found.");
+            }
+
+            var json = await System.IO.File.ReadAllTextAsync(filePath);
+            var fundamentalData = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, List<FundamentalDataItem>>>>(json);
+
+            if (fundamentalData == null)
+            {
+                return BadRequest("Could not deserialize fundamental data.");
+            }
+
+            foreach (var companyData in fundamentalData)
+            {
+                var instrCd = companyData.Key;
+                var comp = await _context.Comps.FirstOrDefaultAsync(c => c.InstrCd == instrCd);
+
+                if (comp != null)
+                {
+                    UpdateCompanyFromFundamentalData(comp, companyData.Value);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Fundamental data imported successfully.");
+        }
+
+        private void UpdateCompanyFromFundamentalData(Comp comp, Dictionary<string, List<FundamentalDataItem>> data)
+        {
+            comp.AthoCap = GetDecimalValue(data, "authorized_capital");
+            comp.PaidCap = GetDecimalValue(data, "paid_up_capital") ?? comp.PaidCap;
+            comp.NoShrs = GetDecimalValue(data, "total_no_securities") ?? comp.NoShrs;
+            comp.EMail = GetStringValue(data, "email");
+            comp.Tel = GetStringValue(data, "phone_number");
+            comp.Website = GetStringValue(data, "website");
+            comp.ListingYear = GetIntValue(data, "listing_year");
+            comp.LastAgmHeld = GetDateTimeValue(data, "last_agm_held");
+            comp.EarningPerShare = GetDecimalValue(data, "earning_per_share");
+            comp.NetAssetValPerShare = GetDecimalValue(data, "net_asset_val_per_share");
+            comp.NocfPerShare = GetDecimalValue(data, "nocf_per_share");
+            comp.SharePercentageDirector = GetDecimalValue(data, "share_percentage_director");
+            comp.SharePercentageForeign = GetDecimalValue(data, "share_percentage_foreign");
+            comp.SharePercentageGovt = GetDecimalValue(data, "share_percentage_govt");
+            comp.SharePercentageInstitute = GetDecimalValue(data, "share_percentage_institute");
+            comp.SharePercentagePublic = GetDecimalValue(data, "share_percentage_public");
+            comp.YearEnd = GetDateTimeValue(data, "year_end");
+            comp.OperationalStatus = GetStringValue(data, "operational_status");
+            comp.Fax = GetStringValue(data, "fax_number");
+        }
+
+        private string GetStringValue(Dictionary<string, List<FundamentalDataItem>> data, string key)
+        {
+            if (data.TryGetValue(key, out var items) && items.Any())
+            {
+                return items.OrderByDescending(i => i.MetaDate).First().MetaValue;
+            }
+            return null;
+        }
+
+        private decimal? GetDecimalValue(Dictionary<string, List<FundamentalDataItem>> data, string key)
+        {
+            var stringValue = GetStringValue(data, key);
+            if (decimal.TryParse(stringValue, out var result))
+            {
+                return result;
+            }
+            return null;
+        }
+
+        private int? GetIntValue(Dictionary<string, List<FundamentalDataItem>> data, string key)
+        {
+            var stringValue = GetStringValue(data, key);
+            if (int.TryParse(stringValue, out var result))
+            {
+                return result;
+            }
+            return null;
+        }
+
+        private DateTime? GetDateTimeValue(Dictionary<string, List<FundamentalDataItem>> data, string key)
+        {
+            var stringValue = GetStringValue(data, key);
+            if (DateTime.TryParse(stringValue, out var result))
+            {
+                return result;
+            }
+            return null;
         }
 
         [HttpPost("process-file")]
@@ -537,6 +648,17 @@ namespace StockMarket.Api.Controllers
             }
             await _context.SaveChangesAsync();
             return Ok("Comp table updated successfully.");
+        }
+
+        [HttpGet("stocks/latest")]
+        public async Task<IActionResult> GetLatestStockPrices()
+        {
+            var latestPrices = await _context.MarPrices
+                .GroupBy(mp => mp.InstCd)
+                .Select(g => g.OrderByDescending(mp => mp.TransDt).FirstOrDefault())
+                .ToListAsync();
+
+            return Ok(latestPrices);
         }
     }
 }

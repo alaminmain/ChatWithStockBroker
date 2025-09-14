@@ -1,0 +1,108 @@
+import React, { useState, useEffect } from 'react';
+import { getCompanies } from '../../api';
+
+const CompanyList = () => {
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [sortBy, setSortBy] = useState('compNm');
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        setLoading(true);
+        const response = await getCompanies(search, pageNumber, pageSize, sortBy, sortDirection);
+        setCompanies(response.data.companies);
+        setTotalCount(response.data.totalCount);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch companies.');
+        console.error(err);
+      }
+      setLoading(false);
+    };
+
+    fetchCompanies();
+  }, [pageNumber, pageSize, sortBy, sortDirection, search]);
+
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  return (
+    <div>
+      <h2>Company List</h2>
+      <div className="mb-3">
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Search..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {loading && <p>Loading...</p>}
+      {error && <div className="alert alert-danger">{error}</div>}
+
+      {!loading && !error && (
+        <>
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th onClick={() => handleSort('compNm')}>Name</th>
+                <th onClick={() => handleSort('instrCd')}>Instrument Code</th>
+                <th onClick={() => handleSort('compCd')}>Company Code</th>
+                <th onClick={() => handleSort('athocap')}>Authorized Capital</th>
+                <th onClick={() => handleSort('paidcap')}>Paid-up Capital</th>
+              </tr>
+            </thead>
+            <tbody>
+              {companies.map((company) => (
+                <tr key={company.id}>
+                  <td>{company.compNm}</td>
+                  <td>{company.instrCd}</td>
+                  <td>{company.compCd}</td>
+                  <td>{company.athoCap}</td>
+                  <td>{company.paidCap}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="d-flex justify-content-between">
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => setPageNumber(p => Math.max(p - 1, 1))}
+              disabled={pageNumber === 1}
+            >
+              Previous
+            </button>
+            <span>Page {pageNumber} of {totalPages}</span>
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => setPageNumber(p => Math.min(p + 1, totalPages))}
+              disabled={pageNumber === totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default CompanyList;

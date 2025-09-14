@@ -1,6 +1,6 @@
 import * as signalR from '@microsoft/signalr';
 
-const URL = 'http://localhost:5000/chathub'; // Assuming the API is running on port 5000
+const URL = `${process.env.REACT_APP_API_BASE_URL}/chathub`;
 
 class SignalRService {
   constructor() {

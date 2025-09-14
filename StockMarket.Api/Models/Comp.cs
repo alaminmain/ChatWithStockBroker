@@ -57,7 +57,7 @@ namespace StockMarket.Api.Models
         [Column("TAX_HDAY")]
         public string? TaxHday { get; set; }
 
-        [StringLength(50)]
+        [StringLength(255)]
         [Column("TEL")]
         public string? Tel { get; set; }
 
@@ -65,7 +65,7 @@ namespace StockMarket.Api.Models
         [Column("TLX")]
         public string? Tlx { get; set; }
 
-        [StringLength(50)]
+        [StringLength(255)]
         [Column("E_MAIL")]
         public string? EMail { get; set; }
 
@@ -219,5 +219,20 @@ namespace StockMarket.Api.Models
 
         [ForeignKey("SectMajCd")]
         public virtual SectMaj SectMaj { get; set; }
+
+        public string? Website { get; set; }
+        public int? ListingYear { get; set; }
+        public DateTime? LastAgmHeld { get; set; }
+        public decimal? EarningPerShare { get; set; }
+        public decimal? NetAssetValPerShare { get; set; }
+        public decimal? NocfPerShare { get; set; }
+        public decimal? SharePercentageDirector { get; set; }
+        public decimal? SharePercentageForeign { get; set; }
+        public decimal? SharePercentageGovt { get; set; }
+        public decimal? SharePercentageInstitute { get; set; }
+        public decimal? SharePercentagePublic { get; set; }
+        public DateTime? YearEnd { get; set; }
+        public string? OperationalStatus { get; set; }
+        public string? Fax { get; set; }
     }
 }
