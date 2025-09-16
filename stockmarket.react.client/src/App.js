@@ -12,6 +12,8 @@ import StockList from './components/pages/StockList';
 import UserList from './components/pages/UserList';
 import StockChart from './StockChart';
 import Chat from './Chat';
+import CompanyProfile from './components/pages/CompanyProfile'; // Import CompanyProfile
+import CompanyAnalytics from './components/pages/CompanyAnalytics'; // Import CompanyAnalytics
 
 function App() {
   return (
@@ -32,6 +34,8 @@ function App() {
                     <Route path="/users" element={<UserList />} />
                     <Route path="/chart" element={<StockChart />} />
                     <Route path="/chat" element={<Chat />} />
+                    <Route path="/company-profile/:id" element={<CompanyProfile />} /> {/* New route for company profile */}
+                    <Route path="/company-analytics" element={<CompanyAnalytics />} /> {/* New route for company analytics */}
                   </Routes>
                 </MainLayout>
               </PrivateRoute>

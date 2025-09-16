@@ -15,19 +15,19 @@ const Navbar = () => {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <Link className="nav-link" to="/">Home</Link>
+              <Link className="nav-link" to="/"><i className="fas fa-home me-2"></i>Home</Link>
             </li>
             {currentUser ? (
               <li className="nav-item">
-                <a href="#!" className="nav-link" onClick={logout}>Logout</a>
+                <a href="#!" className="nav-link" onClick={logout}><i className="fas fa-sign-out-alt me-2"></i>Logout</a>
               </li>
             ) : (
               <>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/login">Login</Link>
+                  <Link className="nav-link" to="/login"><i className="fas fa-sign-in-alt me-2"></i>Login</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/register">Register</Link>
+                  <Link className="nav-link" to="/register"><i className="fas fa-user-plus me-2"></i>Register</Link>
                 </li>
               </>
             )}

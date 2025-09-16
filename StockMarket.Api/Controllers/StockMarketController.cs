@@ -660,5 +660,158 @@ namespace StockMarket.Api.Controllers
 
             return Ok(latestPrices);
         }
+
+        [HttpPost("update-marprice-from-dse")]
+        public async Task<IActionResult> UpdateMarPriceFromDse()
+        {
+            var url = "https://www.dsebd.org/latest_share_price_scroll_by_ltp.php";
+            var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36");
+            var html = await httpClient.GetStringAsync(url);
+
+            var htmlDocument = new HtmlAgilityPack.HtmlDocument();
+            htmlDocument.LoadHtml(html);
+
+            var table = htmlDocument.DocumentNode.SelectSingleNode("//table[contains(@class, 'shares-table')]");
+
+            if (table == null)
+            {
+                return StatusCode(500, "Could not find the market data table on the website.");
+            }
+
+            var marPriceRecords = new List<MarPrice>();
+            var rows = table.SelectNodes(".//tr");
+
+            if (rows == null)
+            {
+                return StatusCode(500, "Could not find any rows in the market data table.");
+            }
+
+            // Skip header row
+            foreach (var row in rows.Skip(1))
+            {
+                var cells = row.SelectNodes(".//td");
+                if (cells == null || cells.Count < 11) continue; // Ensure enough cells
+
+                var instCd = cells[1].InnerText.Trim();
+
+                var comp = await _context.Comps.FirstOrDefaultAsync(c => c.InstrCd == instCd);
+
+                if (comp == null)
+                {
+                    Console.WriteLine($"Company not found for InstrCd: {instCd}");
+                    continue;
+                }
+
+                var valStr = cells[9].InnerText.Trim();
+                var valDecimal = ParseDecimalFromString(valStr);
+                var finalVal = valDecimal.HasValue ? valDecimal.Value * 1000000m : (decimal?)null;
+
+                var marPrice = new MarPrice
+                {
+                    TransDt = DateTime.Today,
+                    InstCd = instCd,
+                    CompCd = comp.CompCd,
+                    Open = ParseDecimalFromString(cells[2].InnerText.Trim()), // LTP as Open
+                    High = ParseDecimalFromString(cells[3].InnerText.Trim()),
+                    Low = ParseDecimalFromString(cells[4].InnerText.Trim()),
+                    Close = ParseDecimalFromString(cells[2].InnerText.Trim()), // LTP as Close
+                    Chg = ParseDecimalFromString(cells[7].InnerText.Trim()),
+                    Vol = ParseDecimalFromString(cells[10].InnerText.Trim()),
+                    Val = finalVal,
+                };
+                marPriceRecords.Add(marPrice);
+            }
+
+            if (marPriceRecords.Any())
+            {
+                await BulkInsertMarPriceDirect(marPriceRecords);
+            }
+
+            return Ok($"{marPriceRecords.Count} market price records updated successfully from DSE.");
+        }
+
+        private async Task BulkInsertMarPriceDirect(List<MarPrice> marPriceRecords)
+        {
+            // --- Start of new idempotency logic (Revised) ---
+            var incomingKeys = marPriceRecords
+                .Select(r => new { r.TransDt, r.InstCd, r.CompCd })
+                .ToHashSet();
+
+            var uniqueTransDts = incomingKeys.Select(k => k.TransDt).ToHashSet();
+            var existingMarPrices = await _context.MarPrices
+                .Where(mp => uniqueTransDts.Contains(mp.TransDt))
+                .ToListAsync();
+
+            var existingCompositeKeys = existingMarPrices
+                .Select(mp => new { mp.TransDt, mp.InstCd, mp.CompCd })
+                .ToHashSet();
+
+            var newRecordsToInsert = marPriceRecords
+                .Where(r => !existingCompositeKeys.Contains(new { r.TransDt, r.InstCd, r.CompCd }))
+                .ToList();
+            // --- End of new idempotency logic (Revised) ---
+
+            if (!newRecordsToInsert.Any())
+            {
+                return; // All records already exist or no new records to insert
+            }
+
+            DataTable marPriceDataTable = ConvertToDataTable(newRecordsToInsert);
+
+            var connectionString = _context.Database.GetConnectionString();
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var bulkCopy = new SqlBulkCopy(connection))
+                {
+                    bulkCopy.BulkCopyTimeout = 300; // 5 minutes
+                    bulkCopy.DestinationTableName = "MAR_PRICE";
+
+                    // Column Mappings
+                    bulkCopy.ColumnMappings.Add("TransDt", "TRANS_DT");
+                    bulkCopy.ColumnMappings.Add("InstCd", "INST_CD");
+                    bulkCopy.ColumnMappings.Add("CompCd", "COMP_CD");
+                    bulkCopy.ColumnMappings.Add("Open", "OPEN");
+                    bulkCopy.ColumnMappings.Add("High", "HIGH");
+                    bulkCopy.ColumnMappings.Add("Low", "LOW");
+                    bulkCopy.ColumnMappings.Add("Close", "CLOSE");
+                    bulkCopy.ColumnMappings.Add("Chg", "CHG");
+                    bulkCopy.ColumnMappings.Add("Vol", "VOL");
+                    bulkCopy.ColumnMappings.Add("Val", "VAL");
+                    bulkCopy.ColumnMappings.Add("Grp", "GRP");
+                    bulkCopy.ColumnMappings.Add("MarkTp", "MARK_TP");
+                    bulkCopy.ColumnMappings.Add("AvrgRt", "AVRG_RT");
+                    bulkCopy.ColumnMappings.Add("GenIndx", "GEN_INDX");
+                    bulkCopy.ColumnMappings.Add("IndxChg", "INDX_CHG");
+                    bulkCopy.ColumnMappings.Add("MarkCap", "MARK_CAP");
+                    bulkCopy.ColumnMappings.Add("TVal", "T_VAL");
+                    bulkCopy.ColumnMappings.Add("IsinCd", "ISIN_CD");
+                    bulkCopy.ColumnMappings.Add("DsexIndx", "DSEX_INDX");
+
+                    await bulkCopy.WriteToServerAsync(marPriceDataTable);
+                }
+            }
+        }
+
+        private decimal? ParseDecimalFromString(string value)
+        {
+            if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+            {
+                return result;
+            }
+            return null;
+        }
+
+        private int? ParseIntFromString(string value)
+        {
+            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+            {
+                return result;
+            }
+            return null;
+        }
+
     }
 }

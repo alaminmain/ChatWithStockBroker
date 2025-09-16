@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCompanies } from '../../api';
+import { Link } from 'react-router-dom'; // Import Link
 
 const CompanyList = () => {
   const [companies, setCompanies] = useState([]);
@@ -67,16 +68,22 @@ const CompanyList = () => {
                 <th onClick={() => handleSort('compCd')}>Company Code</th>
                 <th onClick={() => handleSort('athocap')}>Authorized Capital</th>
                 <th onClick={() => handleSort('paidcap')}>Paid-up Capital</th>
+                <th>Actions</th> {/* New column for actions */}
               </tr>
             </thead>
             <tbody>
               {companies.map((company) => (
                 <tr key={company.id}>
-                  <td>{company.compNm}</td>
+                  <td>
+                    <Link to={`/company-profile/${company.compCd}`}>{company.compNm}</Link>
+                  </td>
                   <td>{company.instrCd}</td>
                   <td>{company.compCd}</td>
                   <td>{company.athoCap}</td>
                   <td>{company.paidCap}</td>
+                  <td>
+                    <Link to={`/company-profile/${company.compCd}`} className="btn btn-primary btn-sm">Details</Link>
+                  </td>
                 </tr>
               ))}
             </tbody>

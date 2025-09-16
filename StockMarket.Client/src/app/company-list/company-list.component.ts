@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CompanyService } from '../company.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router'; // Import Router
 import { NgApexchartsModule } from 'ng-apexcharts'; // Import NgApexchartsModule
 
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -12,8 +12,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { merge, of as observableOf } from 'rxjs';
 import { catchError, map, startWith, switchMap } from 'rxjs/operators';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog'; // Import MatDialog and MatDialogModule
-import { CompanyDetailsDialogComponent } from '../company-details-dialog/company-details-dialog.component'; // Import the new dialog component
+// import { MatDialog, MatDialogModule } from '@angular/material/dialog'; // Remove MatDialog and MatDialogModule
+// import { CompanyDetailsDialogComponent } from '../company-details-dialog/company-details-dialog.component'; // Remove CompanyDetailsDialogComponent
 
 @Component({
   selector: 'app-company-list',
@@ -27,7 +27,7 @@ import { CompanyDetailsDialogComponent } from '../company-details-dialog/company
     MatSortModule,
     MatInputModule,
     MatFormFieldModule,
-    MatDialogModule, // Keep MatDialogModule
+    // MatDialogModule, // Remove MatDialogModule
     NgApexchartsModule // Add NgApexchartsModule
   ],
   templateUrl: './company-list.component.html',
@@ -47,7 +47,7 @@ export class CompanyListComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private companyService: CompanyService, private dialog: MatDialog) { } // Inject MatDialog
+  constructor(private companyService: CompanyService, private router: Router) { } // Inject Router, remove MatDialog
 
   ngOnInit(): void {
     // Initial load is handled in ngAfterViewInit
@@ -104,10 +104,7 @@ export class CompanyListComponent implements OnInit, AfterViewInit {
   }
 
   openCompanyDetails(compCd: number): void {
-    this.dialog.open(CompanyDetailsDialogComponent, {
-      width: '800px', // Adjust width as needed
-      data: { compCd: compCd }
-    });
+    this.router.navigate(['/company-profile', compCd]);
   }
 
   // closeCompanyDetails(): void { // Remove this

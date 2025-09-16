@@ -9,32 +9,37 @@ const Sidebar = () => {
       <ul className="nav flex-column">
         <li className="nav-item">
           <NavLink to="/" className="nav-link" end>
-            Dashboard
+            <i className="fas fa-tachometer-alt me-2"></i>Dashboard
           </NavLink>
         </li>
         <li className="nav-item">
           <NavLink to="/companies" className="nav-link">
-            Company List
+            <i className="fas fa-building me-2"></i>Company List
+          </NavLink>
+        </li>
+        <li className="nav-item">
+          <NavLink to="/company-analytics" className="nav-link">
+            <i className="fas fa-chart-bar me-2"></i>Company Analytics
           </NavLink>
         </li>
         <li className="nav-item">
           <NavLink to="/stocks" className="nav-link">
-            Stock List
+            <i className="fas fa-chart-line me-2"></i>Stock List
           </NavLink>
         </li>
         <li className="nav-item">
           <NavLink to="/users" className="nav-link">
-            User List
+            <i className="fas fa-users me-2"></i>User List
           </NavLink>
         </li>
         <li className="nav-item">
           <NavLink to="/chart" className="nav-link">
-            Stock Chart
+            <i className="fas fa-chart-area me-2"></i>Stock Chart
           </NavLink>
         </li>
         <li className="nav-item">
           <NavLink to="/chat" className="nav-link">
-            Chat
+            <i className="fas fa-comments me-2"></i>Chat
           </NavLink>
         </li>
       </ul>

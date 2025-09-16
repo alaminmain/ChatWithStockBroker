@@ -9,6 +9,7 @@ import { MainLayoutComponent } from './main-layout/main-layout.component';
 import { StockListComponent } from './stock-list/stock-list.component';
 import { CompanyListComponent } from './company-list/company-list.component';
 import { StockChartComponent } from './stock-chart/stock-chart.component'; // Import StockChartComponent
+import { CompanyProfileComponent } from './company-profile/company-profile.component'; // Import CompanyProfileComponent
 
 export const routes: Routes = [
     {
@@ -33,6 +34,7 @@ export const routes: Routes = [
             { path: 'stock-list', component: StockListComponent },
             { path: 'company-list', component: CompanyListComponent },
             { path: 'stock-chart', component: StockChartComponent }, // New route for stock chart
+            { path: 'company-profile/:id', component: CompanyProfileComponent }, // New route for company profile
             { path: '', redirectTo: 'users', pathMatch: 'full' } // Redirect to users by default within the main layout
         ]
     }

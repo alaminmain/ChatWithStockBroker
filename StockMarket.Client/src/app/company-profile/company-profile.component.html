@@ -1,0 +1,85 @@
+<div class="container mt-4">
+  <div *ngIf="!company" class="text-center">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p>Loading company profile...</p>
+  </div>
+
+  <div *ngIf="company" class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h2 class="mb-0">{{ company.compNm }} ({{ company.compSrtNm }})</h2>
+    </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <strong>Company Code:</strong> {{ company.compCd }}
+        </div>
+        <div class="col-md-6">
+          <strong>Sector Major:</strong> {{ company.sectMajCd }}
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <strong>Address:</strong> {{ company.regOff }}
+        </div>
+        <div class="col-md-6">
+          <strong>Email:</strong> {{ company.email }}
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <strong>Telephone:</strong> {{ company.tel }}
+        </div>
+        <div class="col-md-6">
+          <strong>Fax:</strong> {{ company.fax }}
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <strong>Website:</strong> <a href="{{ company.webAdd }}" target="_blank">{{ company.webAdd }}</a>
+        </div>
+        <div class="col-md-6">
+          <strong>Listing Date:</strong> {{ company.lstDt | date:'mediumDate' }}
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <strong>Paid-up Capital:</strong> {{ company.paidCap | currency:'BDT':'symbol':'1.2-2' }}
+        </div>
+        <div class="col-md-6">
+          <strong>Authorized Capital:</strong> {{ company.authCap | currency:'BDT':'symbol':'1.2-2' }}
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <strong>Face Value:</strong> {{ company.faceVal | currency:'BDT':'symbol':'1.2-2' }}
+        </div>
+        <div class="col-md-6">
+          <strong>Market Lot:</strong> {{ company.mktLot }}
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <strong>Total Securities:</strong> {{ company.totSec }}
+        </div>
+        <div class="col-md-6">
+          <strong>Share Type:</strong> {{ company.shrTyp }}
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <strong>Year End:</strong> {{ company.yrEnd }}
+        </div>
+        <div class="col-md-6">
+          <strong>AGM Date:</strong> {{ company.agmDt | date:'mediumDate' }}
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <strong>Remarks:</strong> {{ company.remarks }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
