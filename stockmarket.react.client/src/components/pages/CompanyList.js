@@ -28,7 +28,12 @@ const CompanyList = () => {
       setLoading(false);
     };
 
-    fetchCompanies();
+    const timer = setTimeout(() => {
+        fetchCompanies();
+    }, 500); // Debounce search
+
+    return () => clearTimeout(timer);
+
   }, [pageNumber, pageSize, sortBy, sortDirection, search]);
 
   const handleSort = (column) => {
@@ -38,20 +43,33 @@ const CompanyList = () => {
       setSortBy(column);
       setSortDirection('asc');
     }
+    setPageNumber(1); // Reset to first page on sort
   };
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    setPageNumber(1); // Reset to first page on search
+  }
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
+  const getSortIndicator = (key) => {
+    if (sortBy === key) {
+      return sortDirection === 'asc' ? ' ▲' : ' ▼';
+    }
+    return null;
+  };
+
   return (
-    <div>
+    <div className="container-fluid mt-4">
       <h2>Company List</h2>
       <div className="mb-3">
         <input
           type="text"
           className="form-control"
-          placeholder="Search..."
+          placeholder="Search by Name, Symbol, Category..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={handleSearchChange}
         />
       </div>
 
@@ -60,36 +78,36 @@ const CompanyList = () => {
 
       {!loading && !error && (
         <>
-          <table className="table table-striped">
-            <thead>
-              <tr>
-                <th onClick={() => handleSort('compNm')}>Name</th>
-                <th onClick={() => handleSort('instrCd')}>Instrument Code</th>
-                <th onClick={() => handleSort('compCd')}>Company Code</th>
-                <th onClick={() => handleSort('athocap')}>Authorized Capital</th>
-                <th onClick={() => handleSort('paidcap')}>Paid-up Capital</th>
-                <th>Actions</th> {/* New column for actions */}
-              </tr>
-            </thead>
-            <tbody>
-              {companies.map((company) => (
-                <tr key={company.id}>
-                  <td>
-                    <Link to={`/company-profile/${company.compCd}`}>{company.compNm}</Link>
-                  </td>
-                  <td>{company.instrCd}</td>
-                  <td>{company.compCd}</td>
-                  <td>{company.athoCap}</td>
-                  <td>{company.paidCap}</td>
-                  <td>
-                    <Link to={`/company-profile/${company.compCd}`} className="btn btn-primary btn-sm">Details</Link>
-                  </td>
+          <div className="table-responsive">
+            <table className="table table-striped table-hover">
+              <thead className="table-dark">
+                <tr>
+                  <th onClick={() => handleSort('compNm')}>Name{getSortIndicator('compNm')}</th>
+                  <th onClick={() => handleSort('instrCd')}>Symbol{getSortIndicator('instrCd')}</th>
+                  <th onClick={() => handleSort('category')}>Category{getSortIndicator('category')}</th>
+                  <th onClick={() => handleSort('sectorName')}>Sector{getSortIndicator('sectorName')}</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {companies.map((company) => (
+                  <tr key={company.id}>
+                    <td>
+                      <Link to={`/company-profile/${company.compCd}`}>{company.compNm}</Link>
+                    </td>
+                    <td>{company.instrCd}</td>
+                    <td>{company.category}</td>
+                    <td>{company.sectorName}</td>
+                    <td>
+                      <Link to={`/company-profile/${company.compCd}`} className="btn btn-primary btn-sm">Details</Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-          <div className="d-flex justify-content-between">
+          <div className="d-flex justify-content-between align-items-center">
             <button 
               className="btn btn-secondary" 
               onClick={() => setPageNumber(p => Math.max(p - 1, 1))}

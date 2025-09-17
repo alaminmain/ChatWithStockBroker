@@ -23,6 +23,11 @@ const Sidebar = () => {
           </NavLink>
         </li>
         <li className="nav-item">
+          <NavLink to="/heatmap" className="nav-link">
+            <i className="fas fa-th me-2"></i>Heatmap
+          </NavLink>
+        </li>
+        <li className="nav-item">
           <NavLink to="/stocks" className="nav-link">
             <i className="fas fa-chart-line me-2"></i>Stock List
           </NavLink>

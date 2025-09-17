@@ -1,0 +1,8 @@
+.leaders-table th, .leaders-table td {
+    font-size: 0.85rem;
+    padding: 0.4rem;
+}
+
+.market-leaders-container .nav-link {
+    cursor: pointer;
+}

@@ -502,7 +502,7 @@ namespace StockMarket.Api.Controllers
                     (c.IsinCd != null && c.IsinCd.Contains(search)) ||
                     (c.RegOff != null && c.RegOff.Contains(search)) ||
                     (c.InstrCd != null && c.InstrCd.Contains(search)) ||
-                    (c.CatTp != null && c.CatTp.Contains(search)) ||
+                    (c.TradeMeth != null && c.TradeMeth.Contains(search)) || // Changed from CatTp
                     (c.Add1 != null && c.Add1.Contains(search)) ||
                     (c.Add2 != null && c.Add2.Contains(search)) ||
                     (c.Tel != null && c.Tel.Contains(search)) ||
@@ -517,56 +517,66 @@ namespace StockMarket.Api.Controllers
             }
 
             var totalCount = await query.CountAsync();
+
+            // We need to handle sorting on the joined Sector Name as well
+            var projectedQuery = query
+                .GroupJoin(_context.SectMajs,
+                    comp => comp.SectMajCd,
+                    sect => sect.SectMajCd,
+                    (comp, sectGroup) => new { comp, sectGroup })
+                .SelectMany(
+                    x => x.sectGroup.DefaultIfEmpty(),
+                    (x, sect) => new {
+                        Company = x.comp,
+                        SectorName = sect != null ? sect.SectMajNm : null
+                    });
+
             if (!string.IsNullOrEmpty(sortBy))
             {
                 // Apply sorting dynamically
                 switch (sortBy.ToLower())
                 {
                     case "compcd":
-                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.CompCd) : query.OrderBy(c => c.CompCd);
+                        projectedQuery = sortDirection?.ToLower() == "desc" ? projectedQuery.OrderByDescending(c => c.Company.CompCd) : projectedQuery.OrderBy(c => c.Company.CompCd);
                         break;
                     case "compnm":
-                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.CompNm) : query.OrderBy(c => c.CompNm);
+                        projectedQuery = sortDirection?.ToLower() == "desc" ? projectedQuery.OrderByDescending(c => c.Company.CompNm) : projectedQuery.OrderBy(c => c.Company.CompNm);
                         break;
-                    case "athocap":
-                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.AthoCap) : query.OrderBy(c => c.AthoCap);
+                    case "sectorname": // New sort option
+                        projectedQuery = sortDirection?.ToLower() == "desc" ? projectedQuery.OrderByDescending(c => c.SectorName) : projectedQuery.OrderBy(c => c.SectorName);
                         break;
-                    case "paidcap":
-                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.PaidCap) : query.OrderBy(c => c.PaidCap);
-                        break;
-                    case "regoff":
-                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.RegOff) : query.OrderBy(c => c.RegOff);
-                        break;
-                    case "noshrs":
-                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.NoShrs) : query.OrderBy(c => c.NoShrs);
+                    case "category": // New sort option
+                        projectedQuery = sortDirection?.ToLower() == "desc" ? projectedQuery.OrderByDescending(c => c.Company.TradeMeth) : projectedQuery.OrderBy(c => c.Company.TradeMeth);
                         break;
                     case "instrcd":
-                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.InstrCd) : query.OrderBy(c => c.InstrCd);
-                        break;
-                    case "startdt":
-                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.StartDt) : query.OrderBy(c => c.StartDt);
-                        break;
-                    case "fcval":
-                        query = sortDirection?.ToLower() == "desc" ? query.OrderByDescending(c => c.FcVal) : query.OrderBy(c => c.FcVal);
+                        projectedQuery = sortDirection?.ToLower() == "desc" ? projectedQuery.OrderByDescending(c => c.Company.InstrCd) : projectedQuery.OrderBy(c => c.Company.InstrCd);
                         break;
                     default:
-                        // Default sort if sortBy is not recognized
-                        query = query.OrderBy(c => c.Id); // Or any default column
+                        projectedQuery = projectedQuery.OrderBy(c => c.Company.Id);
                         break;
                 }
             }
             else
             {
-                // Always apply a default order for consistent pagination
-                query = query.OrderBy(c => c.Id);
+                projectedQuery = projectedQuery.OrderBy(c => c.Company.Id);
             }
 
-            var companies = await query
+            var companiesWithSectors = await projectedQuery
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
-            return Ok(new { Companies = companies, TotalCount = totalCount });
+            // Final projection to a simpler DTO
+            var result = companiesWithSectors.Select(cs => new {
+                cs.Company.Id,
+                cs.Company.CompCd,
+                cs.Company.CompNm,
+                cs.Company.InstrCd,
+                Category = cs.Company.TradeMeth,
+                cs.SectorName
+            }).ToList();
+
+            return Ok(new { Companies = result, TotalCount = totalCount });
         }
 
         [HttpGet("companies/{compCd}")]
@@ -577,7 +587,151 @@ namespace StockMarket.Api.Controllers
             {
                 return NotFound();
             }
-            return Ok(company);
+
+            var sector = await _context.SectMajs.FirstOrDefaultAsync(s => s.SectMajCd == company.SectMajCd);
+
+            // Create a dynamic object or a DTO to return combined information
+            var companyDetails = new {
+                // Copy properties from company
+                company.Id,
+                company.CompCd,
+                company.CompNm,
+                company.SectMajCd,
+                company.SectMinCd,
+                company.InstrCd,
+                company.Add1,
+                company.Add2,
+                company.RegOff,
+                company.PrnSth,
+                company.OpnDt,
+                company.TaxHday,
+                company.Tel,
+                company.Tlx,
+                company.EMail,
+                company.Prod,
+                company.ProVol,
+                company.Spnr,
+                company.AthoCap,
+                company.PaidCap,
+                company.NoShrs,
+                company.FcVal,
+                company.Mlot,
+                company.SbaseRt,
+                company.FlotDtFm,
+                company.FlotDtTo,
+                company.BokClFdt,
+                company.BokClTdt,
+                company.Margin,
+                company.AvgRt,
+                company.RtUpdDt,
+                company.Flag,
+                company.Auditor,
+                company.NsIcb,
+                company.NsUnit,
+                company.NsMutual,
+                company.Pmargin,
+                company.RissuDtFm,
+                company.RissuDtTo,
+                company.Premium,
+                company.Cflag,
+                company.MarFloat,
+                company.MonTo,
+                company.CseInstrCd,
+                company.IndxLst,
+                company.BaseUpdDt,
+                company.Cds,
+                company.CtlRt,
+                company.Net,
+                company.Grp,
+                company.MerchanBankId,
+                company.Otc,
+                company.IpoCutoffDt,
+                company.TradePlatform,
+                company.PeRatio,
+                company.IsinCd,
+                company.StartDt,
+                company.Ldrn,
+                company.ListingYear,
+                company.LastAgmHeld,
+                company.EarningPerShare,
+                company.NetAssetValPerShare,
+                company.NocfPerShare,
+                company.SharePercentageDirector,
+                company.SharePercentageForeign,
+                company.SharePercentageGovt,
+                company.SharePercentageInstitute,
+                company.SharePercentagePublic,
+                company.YearEnd,
+                company.OperationalStatus,
+                company.Fax,
+                company.Website,
+
+                // Use TradeMeth for Category
+                Category = company.TradeMeth,
+                // Add SectorName
+                SectorName = sector?.SectMajNm
+            };
+
+            return Ok(companyDetails);
+        }
+
+        [HttpGet("heatmap-data")]
+        public async Task<IActionResult> GetHeatmapData()
+        {
+            var latestDate = await _context.MarPrices
+                .OrderByDescending(mp => mp.TransDt)
+                .Select(mp => mp.TransDt)
+                .FirstOrDefaultAsync();
+
+            if (latestDate == default) return NotFound();
+
+            var latestPrices = await _context.MarPrices
+                .Where(mp => mp.TransDt == latestDate)
+                .ToListAsync();
+
+            var instrCds = latestPrices.Select(lp => lp.InstCd).ToList();
+
+            var compsData = await _context.Comps
+                .Where(c => instrCds.Contains(c.InstrCd))
+                .GroupJoin(_context.SectMajs,
+                    comp => comp.SectMajCd,
+                    sect => sect.SectMajCd,
+                    (comp, sectGroup) => new { comp, sectGroup })
+                .SelectMany(
+                    x => x.sectGroup.DefaultIfEmpty(),
+                    (x, sect) => new {
+                        x.comp.InstrCd,
+                        SectorName = sect != null ? sect.SectMajNm : "Unclassified"
+                    })
+                .ToDictionaryAsync(data => data.InstrCd);
+
+            var heatmapData = latestPrices
+                .Where(p => p.Vol.HasValue && p.Vol > 0) // Only include stocks that traded
+                .Select(p => {
+                    decimal? yesterdayClose = p.Close - p.Chg;
+                    decimal? changePercent = (yesterdayClose.HasValue && yesterdayClose != 0 && p.Chg.HasValue)
+                        ? (p.Chg.Value / yesterdayClose.Value) * 100
+                        : 0;
+
+                    compsData.TryGetValue(p.InstCd, out var compInfo);
+
+                    return new
+                    {
+                        Symbol = p.InstCd,
+                        Sector = compInfo?.SectorName ?? "Unclassified",
+                        Volume = p.Vol.Value,
+                        ChangePercent = changePercent ?? 0
+                    };
+                })
+                .GroupBy(p => p.Sector)
+                .Select(g => new
+                {
+                    Sector = g.Key,
+                    Stocks = g.ToList()
+                })
+                .ToList();
+
+            return Ok(heatmapData);
         }
 
         [HttpGet("marprice/{compCd}")]
@@ -653,12 +807,114 @@ namespace StockMarket.Api.Controllers
         [HttpGet("stocks/latest")]
         public async Task<IActionResult> GetLatestStockPrices()
         {
+            var latestDate = await _context.MarPrices
+                .OrderByDescending(mp => mp.TransDt)
+                .Select(mp => mp.TransDt)
+                .FirstOrDefaultAsync();
+
+            if (latestDate == default)
+            {
+                return Ok(new List<object>());
+            }
+
             var latestPrices = await _context.MarPrices
-                .GroupBy(mp => mp.InstCd)
-                .Select(g => g.OrderByDescending(mp => mp.TransDt).FirstOrDefault())
+                .Where(mp => mp.TransDt == latestDate)
                 .ToListAsync();
 
-            return Ok(latestPrices);
+            var instrCds = latestPrices.Select(lp => lp.InstCd).ToList();
+
+            var compsData = await _context.Comps
+                .Where(c => instrCds.Contains(c.InstrCd))
+                .GroupJoin(_context.SectMajs,
+                    comp => comp.SectMajCd,
+                    sect => sect.SectMajCd,
+                    (comp, sectGroup) => new { comp, sectGroup })
+                .SelectMany(
+                    x => x.sectGroup.DefaultIfEmpty(),
+                    (x, sect) => new {
+                        x.comp.InstrCd,
+                        x.comp.CompCd,
+                        Category = x.comp.TradeMeth,
+                        SectorName = sect != null ? sect.SectMajNm : null
+                    })
+                .ToDictionaryAsync(data => data.InstrCd);
+
+            var result = latestPrices.Select(p => {
+                decimal? yesterdayClose = p.Close - p.Chg;
+                decimal? changePercent = (yesterdayClose.HasValue && yesterdayClose != 0 && p.Chg.HasValue)
+                    ? Math.Round((p.Chg.Value / yesterdayClose.Value) * 100, 2)
+                    : 0;
+                
+                compsData.TryGetValue(p.InstCd, out var compInfo);
+
+                return new
+                {
+                    CompCd = compInfo?.CompCd,
+                    InstrCd = p.InstCd,
+                    Ltp = p.Close,
+                    Open = p.Open,
+                    High = p.High,
+                    Low = p.Low,
+                    Close = p.Close,
+                    Chg = p.Chg,
+                    Trade = (decimal?)null, // No data for Trade
+                    Value = p.Val,
+                    Volume = p.Vol,
+                    ChangePercent = changePercent,
+                    Category = compInfo?.Category,
+                    SectorName = compInfo?.SectorName
+                };
+            }).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet("market-leaders")]
+        public async Task<IActionResult> GetMarketLeaders()
+        {
+            var latestDate = await _context.MarPrices
+                .OrderByDescending(mp => mp.TransDt)
+                .Select(mp => mp.TransDt)
+                .FirstOrDefaultAsync();
+
+            if (latestDate == default)
+            {
+                return NotFound("No market data available.");
+            }
+
+            var latestPrices = await _context.MarPrices
+                .Where(mp => mp.TransDt == latestDate)
+                .ToListAsync();
+
+            var leaders = latestPrices.Select(p => {
+                decimal? yesterdayClose = p.Close - p.Chg;
+                decimal? changePercent = (yesterdayClose.HasValue && yesterdayClose != 0 && p.Chg.HasValue)
+                    ? Math.Round((p.Chg.Value / yesterdayClose.Value) * 100, 2)
+                    : 0;
+                return new
+                {
+                    p.InstCd,
+                    p.Chg,
+                    p.Close,
+                    p.Vol,
+                    p.Val,
+                    ChangePercent = changePercent
+                };
+            }).ToList();
+
+
+            var topGainers = leaders.Where(p => p.Chg > 0).OrderByDescending(p => p.ChangePercent).Take(10).ToList();
+            var topLosers = leaders.Where(p => p.Chg < 0).OrderBy(p => p.ChangePercent).Take(10).ToList();
+            var topVolume = leaders.OrderByDescending(p => p.Vol).Take(10).ToList();
+            var topValue = leaders.OrderByDescending(p => p.Val).Take(10).ToList();
+
+            return Ok(new
+            {
+                topGainers,
+                topLosers,
+                topVolume,
+                topValue
+            });
         }
 
         [HttpPost("update-marprice-from-dse")]
@@ -793,6 +1049,55 @@ namespace StockMarket.Api.Controllers
                     await bulkCopy.WriteToServerAsync(marPriceDataTable);
                 }
             }
+        }
+
+        [HttpGet("market-summary")]
+        public async Task<IActionResult> GetMarketSummary()
+        {
+            // Find the most recent date in MarPrices
+            var latestDate = await _context.MarPrices
+                .OrderByDescending(mp => mp.TransDt)
+                .Select(mp => mp.TransDt)
+                .FirstOrDefaultAsync();
+
+            if (latestDate == default)
+            {
+                return NotFound("No market price data found.");
+            }
+
+            // Get all records for the latest date
+            var latestPrices = await _context.MarPrices
+                .Where(mp => mp.TransDt == latestDate)
+                .ToListAsync();
+
+            if (!latestPrices.Any())
+            {
+                return NotFound("No prices found for the latest date.");
+            }
+
+            var totalInstruments = latestPrices.Count;
+            var gainers = latestPrices.Count(mp => mp.Chg.HasValue && mp.Chg > 0);
+            var losers = latestPrices.Count(mp => mp.Chg.HasValue && mp.Chg < 0);
+            var unchanged = latestPrices.Count(mp => !mp.Chg.HasValue || mp.Chg == 0);
+
+            if (totalInstruments == 0)
+            {
+                return Ok(new
+                {
+                    Gainers = new { Count = 0, Percentage = 0 },
+                    Losers = new { Count = 0, Percentage = 0 },
+                    Unchanged = new { Count = 0, Percentage = 0 }
+                });
+            }
+
+            var summary = new
+            {
+                Gainers = new { Count = gainers, Percentage = Math.Round((double)gainers / totalInstruments * 100, 2) },
+                Losers = new { Count = losers, Percentage = Math.Round((double)losers / totalInstruments * 100, 2) },
+                Unchanged = new { Count = unchanged, Percentage = Math.Round((double)unchanged / totalInstruments * 100, 2) }
+            };
+
+            return Ok(summary);
         }
 
         private decimal? ParseDecimalFromString(string value)

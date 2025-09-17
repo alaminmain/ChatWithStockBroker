@@ -14,6 +14,8 @@ import StockChart from './StockChart';
 import Chat from './Chat';
 import CompanyProfile from './components/pages/CompanyProfile'; // Import CompanyProfile
 import CompanyAnalytics from './components/pages/CompanyAnalytics'; // Import CompanyAnalytics
+import TodaysPrice from './components/pages/TodaysPrice';
+import HeatmapPage from './components/pages/HeatmapPage';
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
                 <MainLayout>
                   <Routes>
                     <Route path="/" element={<Home />} />
+                    <Route path="/todays-price" element={<TodaysPrice />} />
+                    <Route path="/heatmap" element={<HeatmapPage />} />
                     <Route path="/companies" element={<CompanyList />} />
                     <Route path="/stocks" element={<StockList />} />
                     <Route path="/users" element={<UserList />} />
