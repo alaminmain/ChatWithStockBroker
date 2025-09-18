@@ -176,9 +176,74 @@ namespace StockMarket.Api.Controllers
                 BulkInsertCompFromCsv(filePath);
                 return Ok("Successfully processed comp CSV file.");
             }
+            else if (fileName.Contains("dividendinfo"))
+            {
+                BulkInsertDividendInfo(filePath);
+                return Ok("Successfully processed dividend info file.");
+            }
             else
             {
                 return BadRequest("Unknown file type.");
+            }
+        }
+
+        private void BulkInsertDividendInfo(string filePath)
+        {
+            var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                HeaderValidated = null,
+                MissingFieldFound = null,
+                PrepareHeaderForMatch = args => args.Header.ToLower(),
+                BadDataFound = null
+            };
+
+            using (var reader = new StreamReader(filePath))
+            using (var csv = new CsvReader(reader, config))
+            {
+                csv.Context.RegisterClassMap<DividendInfoMap>();
+                var dividendRecords = csv.GetRecords<DividendInfo>().ToList();
+
+                // Get all existing CompCds from the Comp table
+                var existingCompCds = _context.Comps.Select(c => c.CompCd).ToHashSet();
+
+                // Filter dividend records to only include those with a matching CompCd
+                var filteredDividendRecords = dividendRecords
+                    .Where(dr => dr.CompCd.HasValue && existingCompCds.Contains(dr.CompCd.Value))
+                    .ToList();
+
+                DataTable dividendInfoDataTable = ConvertToDataTable(filteredDividendRecords);
+
+                var connectionString = _context.Database.GetConnectionString();
+
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    using (var bulkCopy = new SqlBulkCopy(connection))
+                    {
+                        bulkCopy.BulkCopyTimeout = 300; // 5 minutes
+                        bulkCopy.DestinationTableName = "DIVIDEND_INFO";
+
+                        // Column Mappings
+                        bulkCopy.ColumnMappings.Add("CompCd", "COMP_CD");
+                        bulkCopy.ColumnMappings.Add("AgmDt", "AGM_DT");
+                        bulkCopy.ColumnMappings.Add("Fyear", "FYEAR");
+                        bulkCopy.ColumnMappings.Add("Cfyear", "CFYEAR");
+                        bulkCopy.ColumnMappings.Add("DivType", "DIV_TYPE");
+                        bulkCopy.ColumnMappings.Add("Rate", "RATE");
+                        bulkCopy.ColumnMappings.Add("Ratio1", "RATIO1");
+                        bulkCopy.ColumnMappings.Add("Ratio2", "RATIO2");
+                        bulkCopy.ColumnMappings.Add("Premium", "PREMIUM");
+                        bulkCopy.ColumnMappings.Add("PaymentDt", "PAYMENT_DT");
+                        bulkCopy.ColumnMappings.Add("BokClFdt", "BOK_CL_FDT");
+                        bulkCopy.ColumnMappings.Add("BokClTdt", "BOK_CL_TDT");
+                        bulkCopy.ColumnMappings.Add("OpName", "OP_NAME");
+                        bulkCopy.ColumnMappings.Add("Discount", "DISCOUNT");
+                        bulkCopy.ColumnMappings.Add("Remarks", "REMARKS");
+                        bulkCopy.ColumnMappings.Add("BsCompCd", "BS_COMP_CD");
+
+                        bulkCopy.WriteToServer(dividendInfoDataTable);
+                    }
+                }
             }
         }
 
@@ -339,7 +404,7 @@ namespace StockMarket.Api.Controllers
 
                     var comp = new Comp
                     {
-                        CompCd = ParseInt(excelRow.GetCell(0)),
+                        CompCd = ParseInt(excelRow.GetCell(0)) ?? 0,
                         CompNm = excelRow.GetCell(1)?.ToString(),
                         SectMajCd = excelRow.GetCell(2)?.ToString(),
                         SectMinCd = excelRow.GetCell(3)?.ToString(),
@@ -1098,6 +1163,19 @@ namespace StockMarket.Api.Controllers
             };
 
             return Ok(summary);
+        }
+
+        [HttpPost("import-dividend-info-from-path")]
+        public IActionResult ImportDividendInfoFromPath()
+        {
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "DividendInfo.csv");
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound("DividendInfo.csv not found.");
+            }
+
+            BulkInsertDividendInfo(filePath);
+            return Ok("Successfully processed dividend info file.");
         }
 
         private decimal? ParseDecimalFromString(string value)

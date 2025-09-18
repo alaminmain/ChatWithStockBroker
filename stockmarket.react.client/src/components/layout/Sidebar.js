@@ -47,6 +47,11 @@ const Sidebar = () => {
             <i className="fas fa-comments me-2"></i>Chat
           </NavLink>
         </li>
+        <li className="nav-item">
+          <NavLink to="/dividend-info" className="nav-link">
+            <i className="fas fa-money-bill-wave me-2"></i>Dividend Info
+          </NavLink>
+        </li>
       </ul>
     </div>
   );

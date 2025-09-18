@@ -478,6 +478,85 @@ namespace StockMarket.Api.Data.Migrations
                     b.ToTable("COMP");
                 });
 
+            modelBuilder.Entity("StockMarket.Api.Models.DividendInfo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AgmDt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("AGM_DT");
+
+                    b.Property<DateTime?>("BokClFdt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("BOK_CL_FDT");
+
+                    b.Property<DateTime?>("BokClTdt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("BOK_CL_TDT");
+
+                    b.Property<int?>("BsCompCd")
+                        .HasColumnType("int")
+                        .HasColumnName("BS_COMP_CD");
+
+                    b.Property<string>("Cfyear")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("CFYEAR");
+
+                    b.Property<int?>("CompCd")
+                        .HasColumnType("int")
+                        .HasColumnName("COMP_CD");
+
+                    b.Property<decimal?>("Discount")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("DISCOUNT");
+
+                    b.Property<string>("DivType")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("DIV_TYPE");
+
+                    b.Property<string>("Fyear")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("FYEAR");
+
+                    b.Property<string>("OpName")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("OP_NAME");
+
+                    b.Property<DateTime?>("PaymentDt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("PAYMENT_DT");
+
+                    b.Property<decimal?>("Premium")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("PREMIUM");
+
+                    b.Property<decimal?>("Rate")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("RATE");
+
+                    b.Property<decimal?>("Ratio1")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("RATIO1");
+
+                    b.Property<decimal?>("Ratio2")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("RATIO2");
+
+                    b.Property<string>("Remarks")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("REMARKS");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompCd");
+
+                    b.ToTable("DIVIDEND_INFO");
+                });
+
             modelBuilder.Entity("StockMarket.Api.Models.MarPrice", b =>
                 {
                     b.Property<int>("Id")
@@ -735,6 +814,15 @@ namespace StockMarket.Api.Data.Migrations
                         .HasForeignKey("SectMajCd");
 
                     b.Navigation("SectMaj");
+                });
+
+            modelBuilder.Entity("StockMarket.Api.Models.DividendInfo", b =>
+                {
+                    b.HasOne("StockMarket.Api.Models.Comp", "Comp")
+                        .WithMany()
+                        .HasForeignKey("CompCd");
+
+                    b.Navigation("Comp");
                 });
 
             modelBuilder.Entity("StockMarket.Api.Models.SectMaj", b =>

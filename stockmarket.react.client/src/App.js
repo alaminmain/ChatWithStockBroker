@@ -16,6 +16,7 @@ import CompanyProfile from './components/pages/CompanyProfile'; // Import Compan
 import CompanyAnalytics from './components/pages/CompanyAnalytics'; // Import CompanyAnalytics
 import TodaysPrice from './components/pages/TodaysPrice';
 import HeatmapPage from './components/pages/HeatmapPage';
+import DividendInfoPage from './components/pages/DividendInfoPage';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
                     <Route path="/chat" element={<Chat />} />
                     <Route path="/company-profile/:id" element={<CompanyProfile />} /> {/* New route for company profile */}
                     <Route path="/company-analytics" element={<CompanyAnalytics />} /> {/* New route for company analytics */}
+                    <Route path="/dividend-info" element={<DividendInfoPage />} />
                   </Routes>
                 </MainLayout>
               </PrivateRoute>
