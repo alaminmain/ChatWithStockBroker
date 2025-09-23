@@ -16,6 +16,7 @@ using System.Data;
 using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Identity;
 
 namespace StockMarket.Api.Controllers
 {
@@ -38,10 +39,12 @@ namespace StockMarket.Api.Controllers
     public class StockMarketController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<User> _userManager;
 
-        public StockMarketController(ApplicationDbContext context)
+        public StockMarketController(ApplicationDbContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         [HttpPost("import-fundamental-data")]
@@ -262,36 +265,17 @@ namespace StockMarket.Api.Controllers
                 csv.Context.RegisterClassMap<MarPriceMap>();
                 var marPriceRecords = csv.GetRecords<MarPrice>().ToList();
 
-                // --- Start of new idempotency logic (Revised) ---
-                var incomingKeys = marPriceRecords
-                    .Select(r => new { r.TransDt, r.InstCd, r.CompCd })
-                    .ToHashSet();
+                var uniqueTransDts = marPriceRecords.Select(r => r.TransDt).ToHashSet();
+                var existingRecords = _context.MarPrices.Where(mp => uniqueTransDts.Contains(mp.TransDt)).ToList();
+                _context.MarPrices.RemoveRange(existingRecords);
+                _context.SaveChanges();
 
-                // Fetch existing records that match any of the incoming TransDt values
-                // This might still fetch a lot of data if TransDt is not very selective
-                var uniqueTransDts = incomingKeys.Select(k => k.TransDt).ToHashSet();
-                var existingMarPrices = _context.MarPrices
-                    .Where(mp => uniqueTransDts.Contains(mp.TransDt))
-                    .ToList(); // Execute query and bring to memory
-
-                // Create a HashSet of existing composite keys for efficient lookup
-                var existingCompositeKeys = existingMarPrices
-                    .Select(mp => new { mp.TransDt, mp.InstCd, mp.CompCd })
-                    .ToHashSet();
-
-                // Filter out records that already exist
-                var newRecordsToInsert = marPriceRecords
-                    .Where(r => !existingCompositeKeys.Contains(new { r.TransDt, r.InstCd, r.CompCd }))
-                    .ToList();
-                // --- End of new idempotency logic (Revised) ---
-
-                if (!newRecordsToInsert.Any())
+                if (!marPriceRecords.Any())
                 {
-                    // All records already exist or no new records to insert
                     return;
                 }
 
-                DataTable marPriceDataTable = ConvertToDataTable(newRecordsToInsert);
+                DataTable marPriceDataTable = ConvertToDataTable(marPriceRecords);
 
                 var connectionString = _context.Database.GetConnectionString();
 
@@ -872,6 +856,17 @@ namespace StockMarket.Api.Controllers
         [HttpGet("stocks/latest")]
         public async Task<IActionResult> GetLatestStockPrices()
         {
+            var userId = _userManager.GetUserId(User);
+            var userWatchlist = new HashSet<int>();
+
+            if (userId != null)
+            {
+                userWatchlist = await _context.WatchLists
+                    .Where(w => w.UserId == userId)
+                    .Select(w => w.CompId)
+                    .ToHashSetAsync();
+            }
+
             var latestDate = await _context.MarPrices
                 .OrderByDescending(mp => mp.TransDt)
                 .Select(mp => mp.TransDt)
@@ -897,6 +892,7 @@ namespace StockMarket.Api.Controllers
                 .SelectMany(
                     x => x.sectGroup.DefaultIfEmpty(),
                     (x, sect) => new {
+                        x.comp.Id,
                         x.comp.InstrCd,
                         x.comp.CompCd,
                         Category = x.comp.TradeMeth,
@@ -927,7 +923,8 @@ namespace StockMarket.Api.Controllers
                     Volume = p.Vol,
                     ChangePercent = changePercent,
                     Category = compInfo?.Category,
-                    SectorName = compInfo?.SectorName
+                    SectorName = compInfo?.SectorName,
+                    IsInWatchlist = userWatchlist.Contains(compInfo?.Id ?? 0)
                 };
             }).ToList();
 
@@ -1054,31 +1051,17 @@ namespace StockMarket.Api.Controllers
 
         private async Task BulkInsertMarPriceDirect(List<MarPrice> marPriceRecords)
         {
-            // --- Start of new idempotency logic (Revised) ---
-            var incomingKeys = marPriceRecords
-                .Select(r => new { r.TransDt, r.InstCd, r.CompCd })
-                .ToHashSet();
+            var today = DateTime.Today;
+            var existingRecords = await _context.MarPrices.Where(mp => mp.TransDt == today).ToListAsync();
+            _context.MarPrices.RemoveRange(existingRecords);
+            await _context.SaveChangesAsync();
 
-            var uniqueTransDts = incomingKeys.Select(k => k.TransDt).ToHashSet();
-            var existingMarPrices = await _context.MarPrices
-                .Where(mp => uniqueTransDts.Contains(mp.TransDt))
-                .ToListAsync();
-
-            var existingCompositeKeys = existingMarPrices
-                .Select(mp => new { mp.TransDt, mp.InstCd, mp.CompCd })
-                .ToHashSet();
-
-            var newRecordsToInsert = marPriceRecords
-                .Where(r => !existingCompositeKeys.Contains(new { r.TransDt, r.InstCd, r.CompCd }))
-                .ToList();
-            // --- End of new idempotency logic (Revised) ---
-
-            if (!newRecordsToInsert.Any())
+            if (!marPriceRecords.Any())
             {
-                return; // All records already exist or no new records to insert
+                return;
             }
 
-            DataTable marPriceDataTable = ConvertToDataTable(newRecordsToInsert);
+            DataTable marPriceDataTable = ConvertToDataTable(marPriceRecords);
 
             var connectionString = _context.Database.GetConnectionString();
 

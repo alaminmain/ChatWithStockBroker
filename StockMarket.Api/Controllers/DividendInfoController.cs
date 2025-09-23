@@ -147,6 +147,19 @@ namespace StockMarket.Api.Controllers
             return NoContent();
         }
 
+        [HttpGet("company/{compCd}")]
+        public async Task<ActionResult<IEnumerable<DividendInfo>>> GetDividendInfoByCompCd(int compCd)
+        {
+            var dividendInfo = await _context.DividendInfos.Where(d => d.CompCd == compCd).ToListAsync();
+
+            if (dividendInfo == null)
+            {
+                return NotFound();
+            }
+
+            return dividendInfo;
+        }
+
         private bool DividendInfoExists(int id)
         {
             return _context.DividendInfos.Any(e => e.Id == id);

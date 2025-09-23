@@ -1,19 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Chart } from 'react-chartjs-2';
 import { TreemapController, TreemapElement } from 'chartjs-chart-treemap';
-import { Chart as ChartJS, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, Tooltip, Legend, LinearScale } from 'chart.js';
 import { getHeatmapData } from '../../api';
 
-ChartJS.register(TreemapController, TreemapElement, Tooltip, Legend);
+ChartJS.register(TreemapController, TreemapElement, Tooltip, Legend, LinearScale);
 
 const SectorHeatmap = ({ sectorData }) => {
 
     const colorFromValue = (value) => {
-        if (value > 2) return '#008000'; // Strong green
-        if (value > 0) return '#90EE90'; // Light green
-        if (value < -2) return '#FF0000'; // Strong red
-        if (value < 0) return '#F08080'; // Light red
-        return '#D3D3D3'; // Grey for unchanged
+        if (value > 0) return '#008000'; // green
+        if (value < 0) return '#FF0000'; // red
+        return '#0000FF'; // blue
     };
 
     const data = {
@@ -22,17 +20,27 @@ const SectorHeatmap = ({ sectorData }) => {
                 label: sectorData.sector,
                 tree: sectorData.stocks,
                 key: 'volume',
-                groups: ['symbol'],
                 backgroundColor: (ctx) => {
                     if (ctx.type !== 'treemap') return '#808080';
                     const item = ctx.raw.g ? ctx.raw.g : ctx.raw;
-                    return colorFromValue(item.changePercent);
+                    console.log('BackgroundColor item:', item);
+                    if (!item || !item._data) {
+                        console.log('BackgroundColor returning gray');
+                        return '#808080'; // Grey for safety
+                    }
+                    const color = colorFromValue(item._data.changePercent);
+                    console.log('BackgroundColor value:', item._data.changePercent, 'color:', color);
+                    return color;
                 },
                 labels: {
                     display: true,
                     formatter: (ctx) => {
                         const item = ctx.raw.g ? ctx.raw.g : ctx.raw;
-                        return [item.symbol, `${item.changePercent.toFixed(2)}%`];
+                        const originalItem = item ? item._data : null;
+                        if (originalItem && typeof originalItem.changePercent === 'number') {
+                            return [originalItem.symbol, `${originalItem.changePercent.toFixed(2)}%`];
+                        }
+                        return null;
                     },
                     color: '#fff',
                     font: { size: 12, weight: 'bold' },
@@ -54,7 +62,14 @@ const SectorHeatmap = ({ sectorData }) => {
                 callbacks: {
                     label: (context) => {
                         const item = context.raw.g ? context.raw.g : context.raw;
-                        return `${item.symbol}: ${item.changePercent.toFixed(2)}% (Volume: ${item.volume.toLocaleString()})`;
+                        const originalItem = item ? item._data : null;
+                        if (originalItem && typeof originalItem.changePercent === 'number' && typeof originalItem.volume === 'number') {
+                            return `${originalItem.symbol}: ${originalItem.changePercent.toFixed(2)}% (Volume: ${originalItem.volume.toLocaleString()})`;
+                        }
+                        if (originalItem) {
+                            return `${originalItem.symbol || 'N/A'}: Data unavailable`;
+                        }
+                        return 'Data unavailable';
                     },
                 },
             },

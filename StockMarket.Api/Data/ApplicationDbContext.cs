@@ -16,6 +16,7 @@ namespace StockMarket.Api.Data
         public DbSet<SectMin> SectMins { get; set; }
         public DbSet<MarPrice> MarPrices { get; set; }
         public DbSet<DividendInfo> DividendInfos { get; set; }
+        public DbSet<WatchList> WatchLists { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

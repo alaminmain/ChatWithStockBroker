@@ -1,27 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { getLatestStockPrices } from '../../api';
+import { addToWatchlist, removeFromWatchlist } from '../../services/watchlistService';
 
 const StockList = () => {
   const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchStockPrices = async () => {
-      try {
-        setLoading(true);
-        const response = await getLatestStockPrices();
-        setStocks(response.data);
-        setError(null);
-      } catch (err) {
-        setError('Failed to fetch stock prices.');
-        console.error(err);
-      }
-      setLoading(false);
-    };
+  const fetchStockPrices = async () => {
+    try {
+      setLoading(true);
+      const response = await getLatestStockPrices();
+      setStocks(response.data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to fetch stock prices.');
+      console.error(err);
+    }
+    setLoading(false);
+  };
 
+  useEffect(() => {
     fetchStockPrices();
   }, []);
+
+  const handleAddToWatchlist = async (compId) => {
+    try {
+      await addToWatchlist(compId);
+      fetchStockPrices(); // Refresh the stock list
+    } catch (error) {
+      console.error('Error adding to watchlist:', error);
+    }
+  };
+
+  const handleRemoveFromWatchlist = async (compId) => {
+    try {
+      await removeFromWatchlist(compId);
+      fetchStockPrices(); // Refresh the stock list
+    } catch (error) {
+      console.error('Error removing from watchlist:', error);
+    }
+  };
 
   return (
     <div>
@@ -40,6 +59,7 @@ const StockList = () => {
               <th>Low</th>
               <th>Close</th>
               <th>Volume</th>
+              <th>Watchlist</th>
             </tr>
           </thead>
           <tbody>
@@ -53,6 +73,13 @@ const StockList = () => {
                 <td>{stock.low}</td>
                 <td>{stock.close}</td>
                 <td>{stock.vol}</td>
+                <td>
+                  {stock.isInWatchlist ? (
+                    <i className="fas fa-heart text-danger" onClick={() => handleRemoveFromWatchlist(stock.compCd)}></i>
+                  ) : (
+                    <i className="far fa-heart" onClick={() => handleAddToWatchlist(stock.compCd)}></i>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

@@ -28,12 +28,17 @@ const deleteDividendInfo = (id) => {
   return axios.delete(`${API_URL}/${id}`);
 };
 
+const getDividendInfoByCompCd = (compCd) => {
+    return axios.get(`${API_URL}/company/${compCd}`);
+};
+
 const dividendInfoService = {
   getDividendInfo,
   getDividendInfoById,
   createDividendInfo,
   updateDividendInfo,
   deleteDividendInfo,
+  getDividendInfoByCompCd,
 };
 
 export default dividendInfoService;

@@ -52,6 +52,11 @@ const Sidebar = () => {
             <i className="fas fa-money-bill-wave me-2"></i>Dividend Info
           </NavLink>
         </li>
+        <li className="nav-item">
+          <NavLink to="/watchlist" className="nav-link">
+            <i className="fas fa-heart me-2"></i>My Watchlist
+          </NavLink>
+        </li>
       </ul>
     </div>
   );

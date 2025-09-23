@@ -9,11 +9,11 @@ using StockMarket.Api.Data;
 
 #nullable disable
 
-namespace StockMarket.Api.Data.Migrations
+namespace StockMarket.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250918062411_AddDividendInfoTable")]
-    partial class AddDividendInfoTable
+    [Migration("20250923112316_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -555,6 +555,8 @@ namespace StockMarket.Api.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CompCd");
+
                     b.ToTable("DIVIDEND_INFO");
                 });
 
@@ -757,6 +759,30 @@ namespace StockMarket.Api.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("StockMarket.Api.Models.WatchList", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CompId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("WatchLists");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -815,6 +841,34 @@ namespace StockMarket.Api.Data.Migrations
                         .HasForeignKey("SectMajCd");
 
                     b.Navigation("SectMaj");
+                });
+
+            modelBuilder.Entity("StockMarket.Api.Models.DividendInfo", b =>
+                {
+                    b.HasOne("StockMarket.Api.Models.Comp", "Comp")
+                        .WithMany()
+                        .HasForeignKey("CompCd");
+
+                    b.Navigation("Comp");
+                });
+
+            modelBuilder.Entity("StockMarket.Api.Models.WatchList", b =>
+                {
+                    b.HasOne("StockMarket.Api.Models.Comp", "Comp")
+                        .WithMany()
+                        .HasForeignKey("CompId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StockMarket.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Comp");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("StockMarket.Api.Models.SectMaj", b =>
