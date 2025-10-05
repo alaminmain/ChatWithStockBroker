@@ -28,18 +28,18 @@ namespace StockMarket.Api.Models
         [Required]
         [StringLength(20)]
         [Column("INSTR_CD")]
-        public string InstrCd { get; set; }
+        public string InstrCd { get; set; } = string.Empty;
 
         [Required]
         [StringLength(2)]
         [Column("CAT_TP")]
-        public string CatTp { get; set; }
+        public string CatTp { get; set; } = string.Empty;
 
-        [StringLength(50)]
+        [StringLength(255)]
         [Column("ADD1")]
         public string? Add1 { get; set; }
 
-        [StringLength(50)]
+        [StringLength(255)]
         [Column("ADD2")]
         public string? Add2 { get; set; }
 
@@ -69,7 +69,7 @@ namespace StockMarket.Api.Models
         [Column("E_MAIL")]
         public string? EMail { get; set; }
 
-        [StringLength(50)]
+        [StringLength(100)]
         [Column("PROD")]
         public string? Prod { get; set; }
 
@@ -77,7 +77,7 @@ namespace StockMarket.Api.Models
         [Column("PRO_VOL")]
         public string? ProVol { get; set; }
 
-        [StringLength(50)]
+        [StringLength(100)]
         [Column("SPNR")]
         public string? Spnr { get; set; }
 
@@ -218,7 +218,7 @@ namespace StockMarket.Api.Models
         public int? Ldrn { get; set; }
 
         [ForeignKey("SectMajCd")]
-        public virtual SectMaj SectMaj { get; set; }
+        public virtual SectMaj? SectMaj { get; set; }
 
         public string? Website { get; set; }
         public int? ListingYear { get; set; }

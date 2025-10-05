@@ -10,13 +10,13 @@ namespace StockMarket.Api.Models
         [Key]
         [StringLength(2)]
         [Column("SECT_MAJ_CD")]
-        public string SectMajCd { get; set; }
+        public string SectMajCd { get; set; } = string.Empty;
 
         [Required]
         [StringLength(40)]
         [Column("SECT_MAJ_NM")]
-        public string SectMajNm { get; set; }
+        public string SectMajNm { get; set; } = string.Empty;
 
-        public virtual ICollection<Comp> Comps { get; set; }
+        public virtual ICollection<Comp> Comps { get; set; } = new List<Comp>();
     }
 }

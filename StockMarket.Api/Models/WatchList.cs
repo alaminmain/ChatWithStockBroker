@@ -10,15 +10,15 @@ namespace StockMarket.Api.Models
         public int Id { get; set; }
 
         [Required]
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         [Required]
         public int CompId { get; set; }
 
         [ForeignKey("UserId")]
-        public virtual User User { get; set; }
+        public virtual User User { get; set; } = null!;
 
         [ForeignKey("CompId")]
-        public virtual Comp Comp { get; set; }
+        public virtual Comp Comp { get; set; } = null!;
     }
 }

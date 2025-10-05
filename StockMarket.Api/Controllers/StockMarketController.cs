@@ -17,22 +17,23 @@ using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
+using StockMarket.Api.Services;
 
 namespace StockMarket.Api.Controllers
 {
     public class FundamentalDataItem
     {
         [JsonPropertyName("code")]
-        public string Code { get; set; }
+        public string Code { get; set; } = string.Empty;
 
         [JsonPropertyName("meta_key")]
-        public string MetaKey { get; set; }
+        public string MetaKey { get; set; } = string.Empty;
 
         [JsonPropertyName("meta_value")]
-        public string MetaValue { get; set; }
+        public string MetaValue { get; set; } = string.Empty;
 
         [JsonPropertyName("meta_date")]
-        public string MetaDate { get; set; }
+        public string MetaDate { get; set; } = string.Empty;
     }
     [Route("api/[controller]")]
     [ApiController]
@@ -40,11 +41,13 @@ namespace StockMarket.Api.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly OracleDataService _oracleDataService;
 
-        public StockMarketController(ApplicationDbContext context, UserManager<User> userManager)
+        public StockMarketController(ApplicationDbContext context, UserManager<User> userManager, OracleDataService oracleDataService)
         {
             _context = context;
             _userManager = userManager;
+            _oracleDataService = oracleDataService;
         }
 
         [HttpPost("import-fundamental-data")]
@@ -80,6 +83,13 @@ namespace StockMarket.Api.Controllers
             return Ok("Fundamental data imported successfully.");
         }
 
+        [HttpPost("import-marprice-from-oracle")]
+        public async Task<IActionResult> ImportMarPriceFromOracle()
+        {
+            await _oracleDataService.ImportMarPriceData();
+            return Ok("Market price data imported successfully from Oracle.");
+        }
+
         private void UpdateCompanyFromFundamentalData(Comp comp, Dictionary<string, List<FundamentalDataItem>> data)
         {
             comp.AthoCap = GetDecimalValue(data, "authorized_capital");
@@ -103,7 +113,7 @@ namespace StockMarket.Api.Controllers
             comp.Fax = GetStringValue(data, "fax_number");
         }
 
-        private string GetStringValue(Dictionary<string, List<FundamentalDataItem>> data, string key)
+        private string? GetStringValue(Dictionary<string, List<FundamentalDataItem>> data, string key)
         {
             if (data.TryGetValue(key, out var items) && items.Any())
             {
@@ -392,8 +402,8 @@ namespace StockMarket.Api.Controllers
                         CompNm = excelRow.GetCell(1)?.ToString(),
                         SectMajCd = excelRow.GetCell(2)?.ToString(),
                         SectMinCd = excelRow.GetCell(3)?.ToString(),
-                        InstrCd = excelRow.GetCell(4)?.ToString(),
-                        CatTp = excelRow.GetCell(5)?.ToString(),
+                        InstrCd = excelRow.GetCell(4)?.ToString() ?? string.Empty,
+                        CatTp = excelRow.GetCell(5)?.ToString() ?? string.Empty,
                         Add1 = excelRow.GetCell(6)?.ToString(),
                         Add2 = excelRow.GetCell(7)?.ToString(),
                         RegOff = excelRow.GetCell(8)?.ToString(),
@@ -489,7 +499,7 @@ namespace StockMarket.Api.Controllers
             return null;
         }
 
-        private string GetCellValueAsString(ICell cell)
+        private string? GetCellValueAsString(ICell cell)
         {
             if (cell == null)
             {
@@ -762,17 +772,19 @@ namespace StockMarket.Api.Controllers
                         ? (p.Chg.Value / yesterdayClose.Value) * 100
                         : 0;
 
+                    if (p.InstCd == null) return null;
                     compsData.TryGetValue(p.InstCd, out var compInfo);
 
                     return new
                     {
                         Symbol = p.InstCd,
                         Sector = compInfo?.SectorName ?? "Unclassified",
-                        Volume = p.Vol.Value,
+                        Volume = p.Vol!.Value,
                         ChangePercent = changePercent ?? 0
                     };
                 })
-                .GroupBy(p => p.Sector)
+                .Where(x => x != null)
+                .GroupBy(p => p!.Sector)
                 .Select(g => new
                 {
                     Sector = g.Key,
@@ -906,6 +918,7 @@ namespace StockMarket.Api.Controllers
                     ? Math.Round((p.Chg.Value / yesterdayClose.Value) * 100, 2)
                     : 0;
                 
+                if (p.InstCd == null) return null;
                 compsData.TryGetValue(p.InstCd, out var compInfo);
 
                 return new
@@ -926,7 +939,7 @@ namespace StockMarket.Api.Controllers
                     SectorName = compInfo?.SectorName,
                     IsInWatchlist = userWatchlist.Contains(compInfo?.Id ?? 0)
                 };
-            }).ToList();
+            }).Where(x => x != null).ToList();
 
             return Ok(result);
         }

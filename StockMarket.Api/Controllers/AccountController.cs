@@ -59,6 +59,10 @@ namespace StockMarket.Api.Controllers
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user == null)
+                {
+                    return BadRequest("Invalid login attempt.");
+                }
                 return Ok(GenerateJwtToken(user));
             }
 
@@ -75,13 +79,18 @@ namespace StockMarket.Api.Controllers
         private object GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            var keyString = _configuration["Jwt:Key"];
+            if (keyString == null)
+            {
+                throw new InvalidOperationException("JWT key is not configured.");
+            }
+            var key = Encoding.ASCII.GetBytes(keyString);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                    new Claim(JwtRegisteredClaimNames.Email, user.Email)
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id ?? string.Empty),
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 Issuer = _configuration["Jwt:Issuer"],

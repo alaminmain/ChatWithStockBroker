@@ -30,6 +30,10 @@ namespace StockMarket.Api.Controllers
         public async Task<IActionResult> GetWatchlist([FromQuery] DateTime? date)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
             var query = _context.WatchLists.Where(w => w.UserId == userId);
 
             if (date.HasValue)
@@ -69,6 +73,10 @@ namespace StockMarket.Api.Controllers
         public async Task<IActionResult> AddToWatchlist(int compId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
             var watchlistExists = await _context.WatchLists.AnyAsync(w => w.UserId == userId && w.CompId == compId);
 
             if (watchlistExists)
@@ -93,6 +101,10 @@ namespace StockMarket.Api.Controllers
         public async Task<IActionResult> RemoveFromWatchlist(int compId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
             var watchlistItem = await _context.WatchLists.FirstOrDefaultAsync(w => w.UserId == userId && w.CompId == compId);
 
             if (watchlistItem == null)

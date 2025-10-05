@@ -9,7 +9,7 @@ namespace StockMarket.Api.Models
         [Key]
         [StringLength(2)]
         [Column("SECT_MIN_CD")]
-        public string SectMinCd { get; set; }
+        public string SectMinCd { get; set; } = string.Empty;
 
         [StringLength(2)]
         [Column("SECT_MAJ_CD")]
@@ -18,6 +18,6 @@ namespace StockMarket.Api.Models
         [Required]
         [StringLength(40)]
         [Column("SECT_MIN_NM")]
-        public string SectMinNm { get; set; }
+        public string SectMinNm { get; set; } = string.Empty;
     }
 }

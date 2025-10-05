@@ -16,7 +16,7 @@ public class SectMajMap : ClassMap<SectMaj>
 
 public class SectMajCdConverter : DefaultTypeConverter
 {
-    public override object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData)
+    public override object? ConvertFromString(string? text, IReaderRow row, MemberMapData memberMapData)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
