@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getLatestStockPrices, getCompanyDetails } from '../../api';
+import { addToWatchlist, removeFromWatchlist } from '../../services/watchlistService';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import './TodaysPrice.css';
@@ -33,6 +34,21 @@ const TodaysPrice = () => {
     };
     fetchPrices();
   }, []);
+
+  const handleWatchlistToggle = async (compId, isInWatchlist) => {
+    try {
+      if (isInWatchlist) {
+        await removeFromWatchlist(compId);
+      } else {
+        await addToWatchlist(compId);
+      }
+      // Update the state to reflect the change
+      setPrices(prices.map(p => p.compId === compId ? { ...p, isInWatchlist: !p.isInWatchlist } : p));
+    } catch (err) {
+      console.error('Failed to update watchlist', err);
+      // Optionally, show an error to the user
+    }
+  };
 
   const handleSymbolClick = async (compCd) => {
     if (!compCd) return;
@@ -124,6 +140,7 @@ const TodaysPrice = () => {
           <table className="table table-striped table-hover table-sm todays-price-table">
             <thead className="table-dark">
               <tr>
+                <th>Watchlist</th>
                 <th onClick={() => requestSort('instrCd')}>Symbol{getSortIndicator('instrCd')}</th>
                 <th onClick={() => requestSort('category')}>Category{getSortIndicator('category')}</th>
                 <th onClick={() => requestSort('sectorName')}>Sector{getSortIndicator('sectorName')}</th>
@@ -142,6 +159,15 @@ const TodaysPrice = () => {
             <tbody>
               {sortedAndFilteredPrices.map((price, index) => (
                 <tr key={index}>
+                  <td>
+                    <Button
+                      variant={price.isInWatchlist ? 'success' : 'outline-secondary'}
+                      size="sm"
+                      onClick={() => handleWatchlistToggle(price.compId, price.isInWatchlist)}
+                    >
+                      {price.isInWatchlist ? '✓' : '+'}
+                    </Button>
+                  </td>
                   <td className="symbol-link" onClick={() => handleSymbolClick(price.compCd)}>{price.instrCd}</td>
                   <td>{price.category}</td>
                   <td>{price.sectorName}</td>

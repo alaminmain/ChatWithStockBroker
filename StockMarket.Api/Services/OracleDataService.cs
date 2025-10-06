@@ -30,13 +30,25 @@ namespace StockMarket.Api.Services
             }
             var lastEntryDate = _context.MarPrices.Any() ? _context.MarPrices.Max(mp => mp.TransDt) : null;
             var query = @"SELECT 
-               ROWID, TRANS_DT, INST_CD, COMP_CD, 
-               OPEN, HIGH, LOW, 
-               CLOSE, CHG, VOL, 
-               VAL, GRP, MARK_TP, 
-               AVRG_RT, GEN_INDX, INDX_CHG, 
-               MARK_CAP, T_VAL, ISIN_CD, 
-               DSEX_INDX
+               TRANS_DT AS TransDt, 
+               INST_CD AS InstCd, 
+               COMP_CD AS CompCd, 
+               OPEN AS Open, 
+               HIGH AS High, 
+               LOW AS Low, 
+               CLOSE AS Close, 
+               CHG AS Chg, 
+               VOL AS Vol, 
+               VAL AS Val, 
+               GRP AS Grp, 
+               MARK_TP AS MarkTp, 
+               AVRG_RT AS AvrgRt, 
+               GEN_INDX AS GenIndx, 
+               INDX_CHG AS IndxChg, 
+               MARK_CAP AS MarkCap, 
+               T_VAL AS TVal, 
+               ISIN_CD AS IsinCd, 
+               DSEX_INDX AS DsexIndx
             FROM INVEST.MAR_PRICE";
 
             if (lastEntryDate.HasValue)

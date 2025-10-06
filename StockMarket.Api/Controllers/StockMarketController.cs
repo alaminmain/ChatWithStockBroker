@@ -923,6 +923,7 @@ namespace StockMarket.Api.Controllers
 
                 return new
                 {
+                    CompId = compInfo?.Id,
                     CompCd = compInfo?.CompCd,
                     InstrCd = p.InstCd,
                     Ltp = p.Close,
