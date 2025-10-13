@@ -113,6 +113,11 @@ const CompanyProfile = () => {
                 <i className="fas fa-ellipsis-h me-2"></i>Other Information
               </button>
             </li>
+            <li className="nav-item">
+              <Link to={`/company/${id}/reports`} className="nav-link">
+                <i className="fas fa-file-invoice-dollar me-2"></i>Financial Reports
+              </Link>
+            </li>
           </ul>
 
           <div className="tab-content">
@@ -192,7 +197,7 @@ const CompanyProfile = () => {
               </div>
               <div className="row mb-3">
                 <div className="col-md-12">
-                  <strong><i className="fas fa-comment-alt me-2"></i>Remarks:</strong> {company.remarks || 'N/A'}
+                  <strong><I className="fas fa-comment-alt me-2"></i>Remarks:</strong> {company.remarks || 'N/A'}
                 </div>
               </div>
             </div>
@@ -273,7 +278,7 @@ const CompanyProfile = () => {
                   <strong><i className="fas fa-hdd me-2"></i>CDS:</strong> {company.cds || 'N/A'}
                 </div>
                 <div className="col-md-6">
-                  <strong><i className="fas fa-sliders-h me-2"></i>Control Rate:</strong> {company.ctlRt || 'N/A'}
+                  <strong><i className="fas fa-cogs me-2"></i>Control Rate:</strong> {company.ctlRt || 'N/A'}
                 </div>
               </div>
               <div className="row mb-3">
@@ -326,7 +331,7 @@ const CompanyProfile = () => {
               </div>
               <div className="row mb-3">
                 <div className="col-md-6">
-                  <strong><i className="fas fa-dollar-sign me-2"></i>S-Base Rate:</strong> {company.sbaseRt || 'N/A'}
+                  <strong><i className="fas fa-dollar-sign me-2"></i>S-Base Rate:</strong> {company.sbaseRt || 'NA'}
                 </div>
                 <div className="col-md-6">
                   <strong><i className="fas fa-calendar-alt me-2"></i>Float Date From:</strong> {company.flotDtFm ? new Date(company.flotDtFm).toLocaleDateString() : 'N/A'}

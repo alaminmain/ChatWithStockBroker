@@ -18,6 +18,8 @@ import TodaysPrice from './components/pages/TodaysPrice';
 import HeatmapPage from './components/pages/HeatmapPage';
 import DividendInfoPage from './components/pages/DividendInfoPage';
 import Watchlist from './components/pages/Watchlist';
+import AccountingDataUpload from './components/pages/AccountingDataUpload';
+import FinancialReports from './components/pages/FinancialReports'; // Import FinancialReports
 
 function App() {
   return (
@@ -44,6 +46,8 @@ function App() {
                     <Route path="/company-analytics" element={<CompanyAnalytics />} /> {/* New route for company analytics */}
                     <Route path="/dividend-info" element={<DividendInfoPage />} />
                     <Route path="/watchlist" element={<Watchlist />} />
+                    <Route path="/upload-accounting-data" element={<AccountingDataUpload />} />
+                    <Route path="/company/:companyId/reports" element={<FinancialReports />} />
                   </Routes>
                 </MainLayout>
               </PrivateRoute>
