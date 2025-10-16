@@ -17,6 +17,8 @@ namespace StockMarket.Api.Data
         public DbSet<MarPrice> MarPrices { get; set; }
         public DbSet<DividendInfo> DividendInfos { get; set; }
         public DbSet<WatchList> WatchLists { get; set; }
+        public DbSet<FinancialReport> FinancialReports { get; set; }
+        public DbSet<FinancialReportEntry> FinancialReportEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

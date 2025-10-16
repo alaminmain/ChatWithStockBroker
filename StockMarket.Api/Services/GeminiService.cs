@@ -12,7 +12,7 @@ namespace StockMarket.Api.Services
         {
             var apiKey = configuration["GeminiApiKey"];
             var googleAI = new GoogleAI(apiKey: apiKey);
-            _model = googleAI.GenerativeModel(model: Model.GeminiPro);
+            _model = googleAI.GenerativeModel(model: "gemini-pro");
         }
 
         public async Task<string> AnalyzeFinancialData(string text)

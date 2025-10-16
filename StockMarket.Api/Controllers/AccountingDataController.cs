@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using UglyToad.PdfPig;
 using StockMarket.Api.Services;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using UglyToad.PdfPig;
+
 using System.Text;
 using StockMarket.Api.Data;
 using StockMarket.Api.Models;
@@ -33,27 +34,34 @@ namespace StockMarket.Api.Controllers
             public List<FinancialReportEntry> entries { get; set; }
         }
 
-        [HttpPost("upload")]
-        public async Task<IActionResult> Upload([FromForm] IFormFile file, [FromForm] int compCd, [FromForm] int fiscalYear)
+        public class FileUploadModel
         {
-            if (file == null || file.Length == 0)
+            public IFormFile File { get; set; }
+            public int CompCd { get; set; }
+            public int FiscalYear { get; set; }
+        }
+
+        [HttpPost("upload")]
+        public async Task<IActionResult> Upload([FromForm] FileUploadModel model)
+        {
+            if (model.File == null || model.File.Length == 0)
             {
                 return BadRequest("No file uploaded.");
             }
 
-            if (compCd == 0 || fiscalYear == 0)
+            if (model.CompCd == 0 || model.FiscalYear == 0)
             {
                 return BadRequest("Company Code and Fiscal Year are required.");
             }
 
-            var company = await _context.Comps.FirstOrDefaultAsync(c => c.CompCd == compCd);
+            var company = await _context.Comps.FirstOrDefaultAsync(c => c.CompCd == model.CompCd);
             if (company == null)
             {
                 return BadRequest("Invalid Company Code.");
             }
 
             var text = new StringBuilder();
-            using (var pdf = PdfDocument.Open(file.OpenReadStream()))
+            using (var pdf = PdfDocument.Open(model.File.OpenReadStream()))
             {
                 foreach (var page in pdf.GetPages())
                 {
@@ -83,7 +91,7 @@ namespace StockMarket.Api.Controllers
                 var report = new FinancialReport
                 {
                     CompId = company.Id, // Use the actual primary key
-                    Year = fiscalYear,
+                    Year = model.FiscalYear,
                     StatementType = analysis.statementType,
                     Entries = analysis.entries
                 };
